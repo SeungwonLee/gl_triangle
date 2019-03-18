@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">OpenGLEsTriangle</string>
+    <string name="title_activity_square">SquareActivity</string>
+</resources>

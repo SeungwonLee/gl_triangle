@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".StarterActivity">
+
+    <Button
+        android:id="@+id/triangle_opengl_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Triangle" />
+
+    <Button
+        android:id="@+id/square_opengl_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Square"
+        app:layout_constraintTop_toBottomOf="@+id/triangle_opengl_btn" />
+
+    <Button
+        android:id="@+id/txt_opengl_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Texture"
+        app:layout_constraintTop_toBottomOf="@+id/square_opengl_btn" />
+
+</android.support.constraint.ConstraintLayout>
