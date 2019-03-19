@@ -25,15 +25,12 @@ class TextureRenderer(private val context: Context) : GLSurfaceView.Renderer {
             -0.5f, -0.5f, 0.0f, // bottom left
             0.5f, -0.5f, 0.0f, // bottom right
             0.5f, 0.5f, 0.0f // top right
-//            0.0f, 0.5f, 0.0f, // top
-//            -0.5f, -0.5f, 0.0f, // bottom left
-//            0.5f, -0.5f, 0.0f // bottom right
     )
     private val txtCoords: FloatArray = floatArrayOf(
             0.0f, 0.0f,
             0.0f, 1.0f,
-            1.0f, 0.5f,
-            1.0f, 0.5f
+            1.0f, 1.0f,
+            1.0f, 0.0f
     )
     private val drawOrder = shortArrayOf(0, 1, 2, 0, 2, 3)
 
@@ -87,13 +84,13 @@ class TextureRenderer(private val context: Context) : GLSurfaceView.Renderer {
         GLES20.glEnableVertexAttribArray(txtHandle)
         GLES20.glVertexAttribPointer(txtHandle, TXT_COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, txtBuffer)
 
+        // matrixHandle will be used in orthoM for projection.
         matrixHandle = GLES20.glGetUniformLocation(program, "uMVPMatrix")
         GLES20.glUniformMatrix4fv(matrixHandle, 1, false, matrixView, 0)
 
-        // draw a bitmap
+        // OpenGL that future texture calls should be applied to this texture object
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, bitmapHandle)
         GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawOrder.size, GLES20.GL_UNSIGNED_SHORT, drawOrderBuffer)
-//        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertexCount)
 
         GLES20.glDisableVertexAttribArray(positionHandle)
         GLES20.glDisableVertexAttribArray(txtHandle)
@@ -137,6 +134,7 @@ class TextureRenderer(private val context: Context) : GLSurfaceView.Renderer {
     }
 
     private fun getBitmap(): Bitmap {
+        // Decode a image
         val options = BitmapFactory.Options()
         options.inScaled = false
         return BitmapFactory.decodeResource(context.resources, R.drawable.spiderman, options)
@@ -146,13 +144,25 @@ class TextureRenderer(private val context: Context) : GLSurfaceView.Renderer {
         val txtNames = IntArray(2)
         GLES20.glGenTextures(1, txtNames, 0)
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
+
+        // Bind to the texture in OpenGL
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, txtNames[0])
 
+        // Set filtering: a default must be set, or the texture will be
+        // black.
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_LINEAR)
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR)
 
+        // Load the bitmap into the bound texture.
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0)
 
+        // Note: Following code may cause an error to be reported in the
+        // ADB log as follows: E/IMGSRV(20095): :0: HardwareMipGen:
+        // Failed to generate texture mipmap levels (error=3)
+        // No OpenGL error will be encountered (glGetError() will return
+        // 0). If this happens, just squash the source image to be
+        // square. It will look the same because of texture coordinates,
+        // and mipmap generation will work.
         GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D)
 
         Log.w(TAG, "text id : ${txtNames[0]}")
@@ -161,8 +171,11 @@ class TextureRenderer(private val context: Context) : GLSurfaceView.Renderer {
             return 0
         }
 
+        // Recycle the bitmap, since its data has been loaded into
+        // OpenGL.
         bitmap.recycle()
-        // unbind texture
+
+        // Unbind from the texture.
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
 
         return txtNames[0]
