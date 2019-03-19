@@ -25,12 +25,15 @@ class TextureRenderer(private val context: Context) : GLSurfaceView.Renderer {
             -0.5f, -0.5f, 0.0f, // bottom left
             0.5f, -0.5f, 0.0f, // bottom right
             0.5f, 0.5f, 0.0f // top right
+//            0.0f, 0.5f, 0.0f, // top
+//            -0.5f, -0.5f, 0.0f, // bottom left
+//            0.5f, -0.5f, 0.0f // bottom right
     )
     private val txtCoords: FloatArray = floatArrayOf(
             0.0f, 0.0f,
             0.0f, 1.0f,
-            1.0f, 1.0f,
-            1.0f, 0.0f
+            1.0f, 0.5f,
+            1.0f, 0.5f
     )
     private val drawOrder = shortArrayOf(0, 1, 2, 0, 2, 3)
 
@@ -59,8 +62,8 @@ class TextureRenderer(private val context: Context) : GLSurfaceView.Renderer {
         txtBuffer = ByteBuffer.allocateDirect(txtCoords.size * 4)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer()
-        vertexBuffer.put(txtCoords)
-        vertexBuffer.position(0)
+        txtBuffer.put(txtCoords)
+        txtBuffer.position(0)
 
         drawOrderBuffer = ByteBuffer
                 .allocateDirect(drawOrder.size * 2)
@@ -72,7 +75,7 @@ class TextureRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
     override fun onDrawFrame(gl: GL10?) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
-        GLES20.glClearColor(1.0f, 0.0f, 0.0f, 0.0f)
+//        GLES20.glClearColor(1.0f, 0.0f, 0.0f, 0.0f)
 
         Matrix.setIdentityM(matrixView, 0)
 
@@ -87,15 +90,13 @@ class TextureRenderer(private val context: Context) : GLSurfaceView.Renderer {
         matrixHandle = GLES20.glGetUniformLocation(program, "uMVPMatrix")
         GLES20.glUniformMatrix4fv(matrixHandle, 1, false, matrixView, 0)
 
-//        txtHandle2 = GLES20.glGetUniformLocation(program, "s_texture")
-//        GLES20.glUniform1i(txtHandle2, 0)
-
         // draw a bitmap
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, bitmapHandle)
         GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawOrder.size, GLES20.GL_UNSIGNED_SHORT, drawOrderBuffer)
+//        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertexCount)
 
-//        GLES20.glDisableVertexAttribArray(positionHandle)
-//        GLES20.glDisableVertexAttribArray(txtHandle)
+        GLES20.glDisableVertexAttribArray(positionHandle)
+        GLES20.glDisableVertexAttribArray(txtHandle)
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
@@ -103,7 +104,7 @@ class TextureRenderer(private val context: Context) : GLSurfaceView.Renderer {
     }
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
-        GLES20.glClearColor(1.0f, 0.0f, 0.0f, 0.0f)
+        GLES20.glClearColor(0.0f, 1.0f, 0.0f, 0.0f)
 
         val vertextCodeString = TextResourceReader.readTextFileFromResource(context, R.raw.simple_txt_vertex_shader)
         val vertexShader = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER)
