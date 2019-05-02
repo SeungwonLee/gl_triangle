@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import com.example.seungwon.openglestriangle.square.SquareActivity
+import com.example.seungwon.openglestriangle.strip.StripActivity
 import com.example.seungwon.openglestriangle.text.TextureActivity
 import com.example.seungwon.openglestriangle.triangle.MainActivity
 
@@ -22,6 +23,9 @@ class StarterActivity : AppCompatActivity() {
         }
         findViewById<Button>(R.id.txt_opengl_btn).setOnClickListener {
             startActivity(Intent(this, TextureActivity::class.java))
+        }
+        findViewById<Button>(R.id.strip_txt_opengl_btn).setOnClickListener {
+            startActivity(Intent(this, StripActivity::class.java))
         }
     }
 }

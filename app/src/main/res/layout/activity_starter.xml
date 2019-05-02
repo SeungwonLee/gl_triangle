@@ -23,7 +23,14 @@
         android:id="@+id/txt_opengl_btn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Texture"
+        android:text="Texture(with Triangle)"
         app:layout_constraintTop_toBottomOf="@+id/square_opengl_btn" />
+
+    <Button
+        android:id="@+id/strip_txt_opengl_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Texture(with Strip)"
+        app:layout_constraintTop_toBottomOf="@+id/txt_opengl_btn" />
 
 </android.support.constraint.ConstraintLayout>

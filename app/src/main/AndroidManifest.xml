@@ -13,6 +13,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".strip.StripActivity"></activity>
         <activity android:name=".triangle.MainActivity" />
         <activity android:name=".StarterActivity">
             <intent-filter>
@@ -25,7 +26,7 @@
             android:name=".square.SquareActivity"
             android:label="@string/title_activity_square"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".text.TextureActivity"></activity>
+        <activity android:name=".text.TextureActivity" />
     </application>
 
 </manifest>
