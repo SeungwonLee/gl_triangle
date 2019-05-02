@@ -137,7 +137,7 @@ class TextureRenderer(private val context: Context) : GLSurfaceView.Renderer {
         // Decode a image
         val options = BitmapFactory.Options()
         options.inScaled = false
-        return BitmapFactory.decodeResource(context.resources, R.drawable.spiderman, options)
+        return BitmapFactory.decodeResource(context.resources, R.drawable.ic_500_800, options)
     }
 
     private fun getTxt(bitmap: Bitmap): Int {
