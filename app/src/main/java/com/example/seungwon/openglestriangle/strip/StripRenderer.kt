@@ -18,10 +18,10 @@ import javax.microedition.khronos.opengles.GL10
 class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
     private val squareAndTxtCoords: FloatArray = floatArrayOf(
             // X, Y, Z, U, V
-            -1f, -1f, 0.3f, 0.3f,
-            1f, -1f, 1f, 0.3f,
-            1f, 1f, 1f, 1f,
-            -1f, 1f, 0.3f, 1f
+            -1f, -1f, 0f, 1f,
+            1f, -1f, 1f, 1f,
+            1f, 1f, 1f, 0f,
+            -1f, 1f, 0f, 0f
     )
     private val matrixView = FloatArray(16)
 
