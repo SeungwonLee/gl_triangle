@@ -1,7 +1,6 @@
 package com.example.seungwon.openglestriangle.strip
 
 import android.content.Context
-import android.opengl.GLES11Ext
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
@@ -19,10 +18,10 @@ import javax.microedition.khronos.opengles.GL10
 class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
     private val squareAndTxtCoords: FloatArray = floatArrayOf(
             // X, Y, Z, U, V
-            -1.0f, -1.0f, 0f, 0f, 0.5f,
-            1.0f, -1.0f, 0f, 1f, 0.5f,
-            -1.0f, 1.0f, 0f, 0f, 1f,
-            1.0f, 1.0f, 0f, 1f, 1f
+            -1f, -1f, 0.3f, 0.3f,
+            1f, -1f, 1f, 0.3f,
+            1f, 1f, 1f, 1f,
+            -1f, 1f, 0.3f, 1f
     )
     private val matrixView = FloatArray(16)
 
@@ -35,11 +34,11 @@ class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
     private var bitmapHandle: Int = 0
 
     init {
-        vertexBuffer = ByteBuffer.allocateDirect(squareAndTxtCoords.size * 4)
+        vertexBuffer = ByteBuffer.allocateDirect(squareAndTxtCoords.size * FLOAT_SIZE_BYTES)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer()
                 .put(squareAndTxtCoords)
-        vertexBuffer.flip()
+        vertexBuffer.position(0)
     }
 
     override fun onDrawFrame(gl: GL10?) {
@@ -48,10 +47,12 @@ class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
 
         Matrix.setIdentityM(matrixView, 0)
 
+        vertexBuffer.position(0)
         positionHandle = GLES20.glGetAttribLocation(program, "vPosition")
         GLES20.glEnableVertexAttribArray(positionHandle)
         GLES20.glVertexAttribPointer(positionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, TRIANGLE_VERTICES_DATA_STRIDE_BYTES, vertexBuffer)
 
+        vertexBuffer.position(COORDS_PER_VERTEX)
         txtCoordHandle = GLES20.glGetAttribLocation(program, "a_texCoord")
         GLES20.glEnableVertexAttribArray(txtCoordHandle)
         GLES20.glVertexAttribPointer(txtCoordHandle, TXT_COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, TRIANGLE_VERTICES_DATA_STRIDE_BYTES, vertexBuffer)
@@ -62,7 +63,7 @@ class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
 
         // OpenGL that future texture calls should be applied to this texture object
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, bitmapHandle)
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4)
 
         GLES20.glDisableVertexAttribArray(positionHandle)
         GLES20.glDisableVertexAttribArray(txtCoordHandle)
@@ -102,7 +103,7 @@ class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
         GLES20.glLinkProgram(program)
         GLES20.glUseProgram(program)
 
-        val bitmap = TxtLoaderUtil.getBitmap(context, R.drawable.ic_500_800)
+        val bitmap = TxtLoaderUtil.getBitmap(context, R.drawable.bogum)
         bitmapHandle = TxtLoaderUtil.getTxt(bitmap)
 
 //        GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MIN_FILTER,
@@ -119,9 +120,9 @@ class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
 
     companion object {
         private const val TAG = "StripRenderer"
-        private const val COORDS_PER_VERTEX = 3
+        private const val COORDS_PER_VERTEX = 2
         private const val TXT_COORDS_PER_VERTEX = 2
         private const val FLOAT_SIZE_BYTES = 4
-        private const val TRIANGLE_VERTICES_DATA_STRIDE_BYTES = 5 * FLOAT_SIZE_BYTES
+        private const val TRIANGLE_VERTICES_DATA_STRIDE_BYTES = (COORDS_PER_VERTEX + TXT_COORDS_PER_VERTEX) * FLOAT_SIZE_BYTES
     }
 }
