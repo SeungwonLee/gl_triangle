@@ -1,4 +1,4 @@
-package com.example.seungwon.openglestriangle.strip
+package com.example.seungwon.openglestriangle.filter.emboss
 
 import android.content.Context
 import android.opengl.GLES20
@@ -15,13 +15,18 @@ import java.nio.FloatBuffer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
+class EmbossRenderer(val context: Context) : GLSurfaceView.Renderer {
     private val squareAndTxtCoords: FloatArray = floatArrayOf(
             // X, Y, Z, U, V
             -1f, -1f, 0f, 1f,
             1f, -1f, 1f, 1f,
             1f, 1f, 1f, 0f,
             -1f, 1f, 0f, 0f
+    )
+    private val kernalTxtCoords: FloatArray = floatArrayOf(
+            2f, 0f, 0f,
+            0f, -1f, 0f,
+            0f, 0f, -1f
     )
     private val matrixView = FloatArray(16)
     private val projectionMatrix = FloatArray(16)
@@ -31,8 +36,12 @@ class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
     private var program: Int = 0
     private var positionHandle: Int = 0
     private var txtCoordHandle: Int = 0
+    private var kernalHandle: Int = 0
+    private var txtOffsetHandle: Int = 0
     private var matrixHandle: Int = 0
     private var bitmapHandle: Int = 0
+
+    private lateinit var texOffset: FloatArray
 
     init {
         vertexBuffer = ByteBuffer.allocateDirect(squareAndTxtCoords.size * FLOAT_SIZE_BYTES)
@@ -40,6 +49,19 @@ class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
                 .asFloatBuffer()
                 .put(squareAndTxtCoords)
         vertexBuffer.position(0)
+    }
+
+    private fun setTexSize(width: Int, height: Int) {
+        val rw = 1.0f / width
+        val rh = 1.0f / height
+
+        // Don't need to create a new array here, but it's syntactically convenient.
+        texOffset = floatArrayOf(
+                -rw, -rh, 0f, -rh, rw, -rh,
+                -rw, 0f, 0f, 0f, rw, 0f,
+                -rw, rh, 0f, rh, rw, rh
+        )
+        //Log.d(TAG, "filt size: " + width + "x" + height + ": " + Arrays.toString(mTexOffset));
     }
 
     override fun onDrawFrame(gl: GL10?) {
@@ -62,16 +84,26 @@ class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
         matrixHandle = GLES20.glGetUniformLocation(program, "uMVPMatrix")
         GLES20.glUniformMatrix4fv(matrixHandle, 1, false, projectionMatrix, 0)
 
+        kernalHandle = GLES20.glGetUniformLocation(program, "uKernel")
+        GLES20.glUniform1fv(kernalHandle, 9, kernalTxtCoords, 0)
+
+        txtOffsetHandle = GLES20.glGetUniformLocation(program, "uTexOffset")
+        GLES20.glUniform2fv(txtOffsetHandle, 9, texOffset, 0)
+
         // OpenGL that future texture calls should be applied to this texture object
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, bitmapHandle)
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4)
 
         GLES20.glDisableVertexAttribArray(positionHandle)
         GLES20.glDisableVertexAttribArray(txtCoordHandle)
+        GLES20.glDisableVertexAttribArray(kernalHandle)
+        GLES20.glDisableVertexAttribArray(txtOffsetHandle)
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
         GLES20.glViewport(0, 0, width, height)
+
+        setTexSize(width, height)
 
         val aspectRatio = if (width > height)
             width.toFloat() / height
@@ -108,7 +140,7 @@ class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
 
         ShaderInfo.getShaderStatus(vertexShader)
 
-        val fragmentCodeString = TextResourceReader.readTextFileFromResource(context, R.raw.simple_txt_fragment_shader)
+        val fragmentCodeString = TextResourceReader.readTextFileFromResource(context, R.raw.simple_txt_fragment_shader_with_filter_emboss)
         val fragmentShader = GLES20.glCreateShader(GLES20.GL_FRAGMENT_SHADER)
         GLES20.glShaderSource(fragmentShader, fragmentCodeString)
         GLES20.glCompileShader(fragmentShader)

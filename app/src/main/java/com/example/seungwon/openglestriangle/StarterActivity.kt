@@ -1,9 +1,11 @@
 package com.example.seungwon.openglestriangle
 
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.widget.Button
+import com.example.seungwon.openglestriangle.filter.FilterActivity
+import com.example.seungwon.openglestriangle.filter.emboss.EmbossActivity
 import com.example.seungwon.openglestriangle.square.SquareActivity
 import com.example.seungwon.openglestriangle.strip.StripActivity
 import com.example.seungwon.openglestriangle.text.TextureActivity
@@ -26,6 +28,12 @@ class StarterActivity : AppCompatActivity() {
         }
         findViewById<Button>(R.id.strip_txt_opengl_btn).setOnClickListener {
             startActivity(Intent(this, StripActivity::class.java))
+        }
+        findViewById<Button>(R.id.filter_txt_opengl_btn).setOnClickListener {
+            startActivity(Intent(this, FilterActivity::class.java))
+        }
+        findViewById<Button>(R.id.filter_emboss_txt_opengl_btn).setOnClickListener {
+            startActivity(Intent(this, EmbossActivity::class.java))
         }
     }
 }

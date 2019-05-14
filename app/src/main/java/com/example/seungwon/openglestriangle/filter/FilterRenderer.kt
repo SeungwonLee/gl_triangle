@@ -15,7 +15,7 @@ import java.nio.FloatBuffer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
+class FilterRenderer(val context: Context) : GLSurfaceView.Renderer {
     private val squareAndTxtCoords: FloatArray = floatArrayOf(
             // X, Y, Z, U, V
             -1f, -1f, 0f, 1f,
@@ -23,14 +23,23 @@ class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
             1f, 1f, 1f, 0f,
             -1f, 1f, 0f, 0f
     )
+    private val colorsCoords: FloatArray = floatArrayOf(
+            // R, G, B, A
+            1.0f, 0.0f, 0.0f, 1.0f,
+            0.0f, 1.0f, 0.0f, 1.0f,
+            0.0f, 0.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f, 1.0f
+    )
     private val matrixView = FloatArray(16)
     private val projectionMatrix = FloatArray(16)
 
     private val vertexBuffer: FloatBuffer
+    private val colorVertexBuffer: FloatBuffer
 
     private var program: Int = 0
     private var positionHandle: Int = 0
     private var txtCoordHandle: Int = 0
+    private var colorCoordHandle: Int = 0
     private var matrixHandle: Int = 0
     private var bitmapHandle: Int = 0
 
@@ -40,6 +49,12 @@ class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
                 .asFloatBuffer()
                 .put(squareAndTxtCoords)
         vertexBuffer.position(0)
+
+        colorVertexBuffer = ByteBuffer.allocateDirect(colorsCoords.size * FLOAT_SIZE_BYTES)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer()
+                .put(colorsCoords)
+        colorVertexBuffer.position(0)
     }
 
     override fun onDrawFrame(gl: GL10?) {
@@ -57,6 +72,10 @@ class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
         txtCoordHandle = GLES20.glGetAttribLocation(program, "a_texCoord")
         GLES20.glEnableVertexAttribArray(txtCoordHandle)
         GLES20.glVertexAttribPointer(txtCoordHandle, TXT_COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, TRIANGLE_VERTICES_DATA_STRIDE_BYTES, vertexBuffer)
+
+//        colorCoordHandle = GLES20.glGetAttribLocation(program, "a_color")
+//        GLES20.glEnableVertexAttribArray(colorCoordHandle)
+//        GLES20.glVertexAttribPointer(colorCoordHandle, TXT_COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, colorVertexBuffer)
 
         // matrixHandle will be used in orthoM for projection.
         matrixHandle = GLES20.glGetUniformLocation(program, "uMVPMatrix")
@@ -108,7 +127,7 @@ class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
 
         ShaderInfo.getShaderStatus(vertexShader)
 
-        val fragmentCodeString = TextResourceReader.readTextFileFromResource(context, R.raw.simple_txt_fragment_shader)
+        val fragmentCodeString = TextResourceReader.readTextFileFromResource(context, R.raw.simple_txt_fragment_shader_with_filter_black_white)
         val fragmentShader = GLES20.glCreateShader(GLES20.GL_FRAGMENT_SHADER)
         GLES20.glShaderSource(fragmentShader, fragmentCodeString)
         GLES20.glCompileShader(fragmentShader)
