@@ -3,7 +3,6 @@ package com.example.seungwon.openglestriangle.util
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.opengl.GLES11Ext
 import android.opengl.GLES20
 import android.opengl.GLUtils
 import android.util.Log
@@ -25,6 +24,11 @@ object TxtLoaderUtil {
 
         // Bind to the texture in OpenGL
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, txtNames[0])
+
+        // make alpha to transparent not to be a black color.
+        // https://stackoverflow.com/questions/1003497/how-to-remove-black-background-from-textures-in-opengl
+        GLES20.glEnable(GLES20.GL_BLEND)
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA)
 
         // Set filtering: a default must be set, or the texture will be
         // black.
