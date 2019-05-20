@@ -15,7 +15,7 @@ import java.nio.FloatBuffer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-class FilterRenderer(val context: Context) : GLSurfaceView.Renderer {
+class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
     private val squareAndTxtCoords: FloatArray = floatArrayOf(
             // X, Y, Z, U, V
             -1f, -1f, 0f, 1f,
@@ -23,23 +23,11 @@ class FilterRenderer(val context: Context) : GLSurfaceView.Renderer {
             1f, 1f, 1f, 0f,
             -1f, 1f, 0f, 0f
     )
-    private val colorsCoords: FloatArray = floatArrayOf(
-            // R, G, B, A
-            1.0f, 0.0f, 0.0f, 1.0f,
-            0.0f, 1.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 1.0f, 1.0f,
-            1.0f, 1.0f, 1.0f, 1.0f
-    )
-    private val matrixView = FloatArray(16)
-    private val projectionMatrix = FloatArray(16)
-
     private val vertexBuffer: FloatBuffer
-    private val colorVertexBuffer: FloatBuffer
 
     private var program: Int = 0
     private var positionHandle: Int = 0
     private var txtCoordHandle: Int = 0
-    private var colorCoordHandle: Int = 0
     private var matrixHandle: Int = 0
     private var bitmapHandle: Int = 0
 
@@ -49,19 +37,18 @@ class FilterRenderer(val context: Context) : GLSurfaceView.Renderer {
                 .asFloatBuffer()
                 .put(squareAndTxtCoords)
         vertexBuffer.position(0)
-
-        colorVertexBuffer = ByteBuffer.allocateDirect(colorsCoords.size * FLOAT_SIZE_BYTES)
-                .order(ByteOrder.nativeOrder())
-                .asFloatBuffer()
-                .put(colorsCoords)
-        colorVertexBuffer.position(0)
     }
 
+    var i = 0
+    var width = 0f
+    var height = 0f
     override fun onDrawFrame(gl: GL10?) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(1.0f, 0.0f, 0.0f, 0.0f)
 
-//        Matrix.setIdentityM(matrixView, 0)
+        val matrixView = FloatArray(16)
+        val projectionMatrix = FloatArray(16)
+        Matrix.setIdentityM(matrixView, 0)
 
         vertexBuffer.position(0)
         positionHandle = GLES20.glGetAttribLocation(program, "vPosition")
@@ -73,9 +60,19 @@ class FilterRenderer(val context: Context) : GLSurfaceView.Renderer {
         GLES20.glEnableVertexAttribArray(txtCoordHandle)
         GLES20.glVertexAttribPointer(txtCoordHandle, TXT_COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, TRIANGLE_VERTICES_DATA_STRIDE_BYTES, vertexBuffer)
 
-//        colorCoordHandle = GLES20.glGetAttribLocation(program, "a_color")
-//        GLES20.glEnableVertexAttribArray(colorCoordHandle)
-//        GLES20.glVertexAttribPointer(colorCoordHandle, TXT_COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, colorVertexBuffer)
+        if (width >= height) {
+            // Landscape
+            Matrix.orthoM(projectionMatrix, 0, -1.7f, 1.7f, -1f, 1f, -1f, 1f)
+        } else {
+            // Portrait or square
+            Matrix.orthoM(projectionMatrix, 0, -1f, 1f, -1.7f, 1.7f, -1f, 1f)
+        }
+
+        Matrix.rotateM(matrixView, 0, i % 360f, 0f, 1f, -1f)
+
+        val temp = FloatArray(16)
+        Matrix.multiplyMM(temp, 0, projectionMatrix, 0, matrixView, 0)
+        System.arraycopy(temp, 0, projectionMatrix, 0, temp.size)
 
         // matrixHandle will be used in orthoM for projection.
         matrixHandle = GLES20.glGetUniformLocation(program, "uMVPMatrix")
@@ -87,34 +84,14 @@ class FilterRenderer(val context: Context) : GLSurfaceView.Renderer {
 
         GLES20.glDisableVertexAttribArray(positionHandle)
         GLES20.glDisableVertexAttribArray(txtCoordHandle)
+
+        i++
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
         GLES20.glViewport(0, 0, width, height)
-
-        val aspectRatio = if (width > height)
-            width.toFloat() / height
-        else
-            height.toFloat() / width
-
-        Log.d("StripRenderer", "onSurfaceChanged $aspectRatio")
-
-        if (width >= height) {
-            // Landscape
-            Matrix.orthoM(projectionMatrix, 0, -aspectRatio, aspectRatio, -1f, 1f, -1f, 1f)
-        } else {
-            // Portrait or square
-            Matrix.orthoM(projectionMatrix, 0, -1f, 1f, -1.7f, 1.7f, -1f, 1f)
-        }
-
-        Matrix.setIdentityM(matrixView, 0)
-//        Matrix.translateM(matrixView, 0, 0.2f, 0f, 0f)
-//        Matrix.scaleM(matrixView, 0, 0.2f, 0f, 0f)
-//        Matrix.rotateM(matrixView, 0, 270f, 0f, 1f, -1f)
-
-        val temp = FloatArray(16)
-        Matrix.multiplyMM(temp, 0, projectionMatrix, 0, matrixView, 0)
-        System.arraycopy(temp, 0, projectionMatrix, 0, temp.size)
+        this.width = width.toFloat()
+        this.height = height.toFloat()
     }
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
@@ -127,7 +104,7 @@ class FilterRenderer(val context: Context) : GLSurfaceView.Renderer {
 
         ShaderInfo.getShaderStatus(vertexShader)
 
-        val fragmentCodeString = TextResourceReader.readTextFileFromResource(context, R.raw.simple_txt_fragment_shader_with_filter_black_white)
+        val fragmentCodeString = TextResourceReader.readTextFileFromResource(context, R.raw.simple_txt_fragment_shader)
         val fragmentShader = GLES20.glCreateShader(GLES20.GL_FRAGMENT_SHADER)
         GLES20.glShaderSource(fragmentShader, fragmentCodeString)
         GLES20.glCompileShader(fragmentShader)

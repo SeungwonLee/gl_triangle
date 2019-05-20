@@ -18,7 +18,8 @@
         <activity android:name=".multiTxt.MultiTxtActivity" />
         <activity android:name=".filter.emboss.EmbossActivity" />
         <activity android:name=".filter.FilterActivity" />
-        <activity android:name=".strip.StripActivity" />
+        <activity android:name=".projection.ProjectionActivity" />
+        <activity android:name=".projection.translation.StripActivity" />
         <activity android:name=".triangle.MainActivity" />
         <activity android:name=".StarterActivity">
             <intent-filter>
@@ -28,7 +29,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".square.SquareActivity"
+            android:name=".translation.SquareActivity"
             android:label="@string/title_activity_square"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".text.TextureActivity" />

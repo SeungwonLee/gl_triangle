@@ -1,4 +1,4 @@
-package com.example.seungwon.openglestriangle.strip
+package com.example.seungwon.openglestriangle.projection
 
 import android.content.Context
 import android.opengl.GLES20
@@ -15,7 +15,7 @@ import java.nio.FloatBuffer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
+class ProjectionRenderer(val context: Context) : GLSurfaceView.Renderer {
     private val squareAndTxtCoords: FloatArray = floatArrayOf(
             // X, Y, Z, U, V
             -1f, -1f, 0f, 1f,
@@ -24,7 +24,6 @@ class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
             -1f, 1f, 0f, 0f
     )
     private val matrixView = FloatArray(16)
-    private val projectionMatrix = FloatArray(16)
 
     private val vertexBuffer: FloatBuffer
 
@@ -42,16 +41,9 @@ class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
         vertexBuffer.position(0)
     }
 
-    var i = 0
-    var width = 0f
-    var height = 0f
     override fun onDrawFrame(gl: GL10?) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(1.0f, 0.0f, 0.0f, 0.0f)
-
-        val matrixView = FloatArray(16)
-        val projectionMatrix = FloatArray(16)
-        Matrix.setIdentityM(matrixView, 0)
 
         vertexBuffer.position(0)
         positionHandle = GLES20.glGetAttribLocation(program, "vPosition")
@@ -63,23 +55,9 @@ class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
         GLES20.glEnableVertexAttribArray(txtCoordHandle)
         GLES20.glVertexAttribPointer(txtCoordHandle, TXT_COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, TRIANGLE_VERTICES_DATA_STRIDE_BYTES, vertexBuffer)
 
-        if (width >= height) {
-            // Landscape
-            Matrix.orthoM(projectionMatrix, 0, -1.7f, 1.7f, -1f, 1f, -1f, 1f)
-        } else {
-            // Portrait or square
-            Matrix.orthoM(projectionMatrix, 0, -1f, 1f, -1.7f, 1.7f, -1f, 1f)
-        }
-
-        Matrix.rotateM(matrixView, 0, i % 360f, 0f, 1f, -1f)
-
-        val temp = FloatArray(16)
-        Matrix.multiplyMM(temp, 0, projectionMatrix, 0, matrixView, 0)
-        System.arraycopy(temp, 0, projectionMatrix, 0, temp.size)
-
         // matrixHandle will be used in orthoM for projection.
         matrixHandle = GLES20.glGetUniformLocation(program, "uMVPMatrix")
-        GLES20.glUniformMatrix4fv(matrixHandle, 1, false, projectionMatrix, 0)
+        GLES20.glUniformMatrix4fv(matrixHandle, 1, false, matrixView, 0)
 
         // OpenGL that future texture calls should be applied to this texture object
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, bitmapHandle)
@@ -87,37 +65,20 @@ class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
 
         GLES20.glDisableVertexAttribArray(positionHandle)
         GLES20.glDisableVertexAttribArray(txtCoordHandle)
-
-        i++
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
         GLES20.glViewport(0, 0, width, height)
-        this.width = width.toFloat()
-        this.height = height.toFloat()
-//        val aspectRatio = if (width > height)
-//            width.toFloat() / height
-//        else
-//            height.toFloat() / width
-//
-//        Log.d("StripRenderer", "onSurfaceChanged $aspectRatio")
-//
-//        if (width >= height) {
-//            // Landscape
-//            Matrix.orthoM(projectionMatrix, 0, -aspectRatio, aspectRatio, -1f, 1f, -1f, 1f)
-//        } else {
-//            // Portrait or square
-//            Matrix.orthoM(projectionMatrix, 0, -1f, 1f, -1.7f, 1.7f, -1f, 1f)
-//        }
 
         Matrix.setIdentityM(matrixView, 0)
-//        Matrix.translateM(matrixView, 0, 0.2f, 0f, 0f)
-//        Matrix.scaleM(matrixView, 0, 0.2f, 0f, 0f)
-//        Matrix.rotateM(matrixView, 0, 270f, 0f, 1f, -1f)
 
-//        val temp = FloatArray(16)
-//        Matrix.multiplyMM(temp, 0, projectionMatrix, 0, matrixView, 0)
-//        System.arraycopy(temp, 0, projectionMatrix, 0, temp.size)
+        if (width >= height) {
+            // Landscape
+            Matrix.orthoM(matrixView, 0, 0f, 1f, -1f, 1f, -1f, 1f)
+        } else {
+            // Portrait or square
+            Matrix.orthoM(matrixView, 0, -1f, 1f, 0f, 1f, -1f, 1f)
+        }
     }
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
@@ -152,21 +113,11 @@ class StripRenderer(val context: Context) : GLSurfaceView.Renderer {
 
         val bitmap = TxtLoaderUtil.getBitmap(context, R.drawable.bogum)
         bitmapHandle = TxtLoaderUtil.getTxt(bitmap)
-
-//        GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MIN_FILTER,
-//                GLES20.GL_LINEAR.toFloat())
-//        GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MAG_FILTER,
-//                GLES20.GL_LINEAR.toFloat())
-//        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_S,
-//                GLES20.GL_CLAMP_TO_EDGE)
-//        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_T,
-//                GLES20.GL_CLAMP_TO_EDGE)
-
         bitmap.recycle()
     }
 
     companion object {
-        private const val TAG = "StripRenderer"
+        private const val TAG = "ProjectionRenderer"
         private const val COORDS_PER_VERTEX = 2
         private const val TXT_COORDS_PER_VERTEX = 2
         private const val FLOAT_SIZE_BYTES = 4

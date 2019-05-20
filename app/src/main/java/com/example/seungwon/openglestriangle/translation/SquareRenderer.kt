@@ -1,4 +1,4 @@
-package com.example.seungwon.openglestriangle.square
+package com.example.seungwon.openglestriangle.translation
 
 import android.content.Context
 import android.opengl.GLES20
@@ -7,7 +7,6 @@ import android.util.Log
 import com.example.seungwon.openglestriangle.R
 import com.example.seungwon.openglestriangle.ShaderInfo
 import com.example.seungwon.openglestriangle.TextResourceReader
-import com.example.seungwon.openglestriangle.triangle.TriangleRenderer
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer

@@ -1,12 +1,12 @@
-package com.example.seungwon.openglestriangle.filter
+package com.example.seungwon.openglestriangle.projection
 
 import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import com.example.seungwon.openglestriangle.R
-import com.example.seungwon.openglestriangle.projection.translation.FilterRenderer
+import com.example.seungwon.openglestriangle.projection.translation.StripRenderer
 
-class FilterActivity : AppCompatActivity() {
+class ProjectionActivity : AppCompatActivity() {
 
     var surfaceView: GLSurfaceView? = null
 
@@ -16,7 +16,7 @@ class FilterActivity : AppCompatActivity() {
 
         val surfaceView = findViewById<GLSurfaceView>(R.id.surface_view)
         surfaceView.setEGLContextClientVersion(2)
-        surfaceView.setRenderer(FilterRenderer(this))
+        surfaceView.setRenderer(ProjectionRenderer(this))
     }
 
     override fun onPause() {

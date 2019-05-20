@@ -1,21 +1,21 @@
-package com.example.seungwon.openglestriangle.strip
+package com.example.seungwon.openglestriangle.translation
 
 import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import com.example.seungwon.openglestriangle.R
 
-class StripActivity : AppCompatActivity() {
+class SquareActivity : AppCompatActivity() {
 
-    var surfaceView: GLSurfaceView? = null
+    private var surfaceView : GLSurfaceView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_strip)
+        setContentView(R.layout.activity_square)
 
-        val surfaceView = findViewById<GLSurfaceView>(R.id.surface_view)
+        val surfaceView = findViewById<GLSurfaceView>(R.id.square_surface_view)
         surfaceView.setEGLContextClientVersion(2)
-        surfaceView.setRenderer(StripRenderer(this))
+        surfaceView.setRenderer(SquareRenderer(this))
     }
 
     override fun onPause() {
