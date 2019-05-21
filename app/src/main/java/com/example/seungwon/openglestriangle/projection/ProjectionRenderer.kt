@@ -70,14 +70,19 @@ class ProjectionRenderer(val context: Context) : GLSurfaceView.Renderer {
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
         GLES20.glViewport(0, 0, width, height)
 
+        val aspectRatio = if (width > height)
+            width.toFloat() / height
+        else
+            height.toFloat() / width
+
         Matrix.setIdentityM(matrixView, 0)
 
         if (width >= height) {
             // Landscape
-            Matrix.orthoM(matrixView, 0, 0f, 1f, -1f, 1f, -1f, 1f)
+            Matrix.orthoM(matrixView, 0, -aspectRatio, aspectRatio, -1f, 1f, -1f, 1f)
         } else {
             // Portrait or square
-            Matrix.orthoM(matrixView, 0, -1f, 1f, 0f, 1f, -1f, 1f)
+            Matrix.orthoM(matrixView, 0, -1f, 1f, -aspectRatio, aspectRatio, -1f, 1f)
         }
     }
 
