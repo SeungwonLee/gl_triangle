@@ -15,6 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
+        <activity android:name=".framebuffer.FrameBufferRendererActivity"></activity>
         <activity android:name=".multiTxt.MultiTxtActivity" />
         <activity android:name=".filter.emboss.EmbossActivity" />
         <activity android:name=".filter.FilterActivity" />

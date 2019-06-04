@@ -1,7 +1,8 @@
-package com.example.seungwon.openglestriangle.multiTxt
+package com.example.seungwon.openglestriangle.framebuffer
 
 import android.content.Context
 import android.opengl.GLES20
+import android.opengl.GLES30
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
 import android.util.Log
@@ -15,7 +16,8 @@ import java.nio.FloatBuffer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-class MultiTxtRenderer(val context: Context) : GLSurfaceView.Renderer {
+
+class FrameBufferRenderer(val context: Context) : GLSurfaceView.Renderer {
     private val squareCoords: FloatArray = floatArrayOf(
             // X, Y
             -1f, -1f,
@@ -50,6 +52,9 @@ class MultiTxtRenderer(val context: Context) : GLSurfaceView.Renderer {
     private var matrixHandle: Int = 0
     private var bitmapHandle: Int = 0
     private var catBitmapHandle: Int = 0
+
+    private var frameBufferHandle: Int = 0
+    private var catFrameBufferHandle: Int = 0
 
     private var angleOffset = 0
 
@@ -90,7 +95,11 @@ class MultiTxtRenderer(val context: Context) : GLSurfaceView.Renderer {
         GLES20.glUniformMatrix4fv(matrixHandle, 1, false, projectionMatrix, 0)
 
         // OpenGL that future texture calls should be applied to this texture object
+        // draw bogum
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, bitmapHandle)
+
+//        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBufferHandle)
+
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4)
 
         // rotate cat
@@ -110,6 +119,12 @@ class MultiTxtRenderer(val context: Context) : GLSurfaceView.Renderer {
 
         // draw cat
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, catBitmapHandle)
+
+//        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, catFrameBufferHandle)
+
+        // Attach Texture to FBO.
+        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, catBitmapHandle, 0)
+
         GLES20.glVertexAttribPointer(positionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, catVertexBuffer)
 
         GLES20.glUniformMatrix4fv(matrixHandle, 1, false, copyProjectionMatrix, 0)
@@ -119,6 +134,8 @@ class MultiTxtRenderer(val context: Context) : GLSurfaceView.Renderer {
         GLES20.glDisableVertexAttribArray(txtCoordHandle)
 
         angleOffset += 1
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
@@ -187,10 +204,43 @@ class MultiTxtRenderer(val context: Context) : GLSurfaceView.Renderer {
 
         bitmap.recycle()
         catBitmap.recycle()
+
+        // Generate the frame buffer object.
+        frameBufferHandle = initFrameBuffer()
+        attachFrameBuffer(bitmapHandle)
+
+        // Generate the frame buffer object.
+        catFrameBufferHandle = initFrameBuffer()
+        attachFrameBuffer(catBitmapHandle)
+    }
+
+    private fun attachFrameBuffer(txtHandleId: Int): Int {
+        // attach color buffers to this FBO.
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBufferHandle)
+
+        // Attach Texture to FBO.
+        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES30.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, txtHandleId, 0)
+
+        val status = GLES20.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER)
+        Log.e(TAG, "status=${(status == GLES20.GL_FRAMEBUFFER_COMPLETE)}")
+
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
+        return status
+    }
+
+    private fun initFrameBuffer(): Int {
+        val frameBufferIds = IntArray(2)
+
+        // Generate frame buffer object.
+        GLES20.glGenFramebuffers(1, frameBufferIds, 0)
+
+        Log.e(TAG, "glGenFramebuffers ${frameBufferIds[0]}")
+
+        return frameBufferIds[0]
     }
 
     companion object {
-        private const val TAG = "MultiTxtRenderer"
+        private const val TAG = "FrameBufferRenderer"
         private const val COORDS_PER_VERTEX = 2
         private const val TXT_COORDS_PER_VERTEX = 2
         private const val FLOAT_SIZE_BYTES = 4
