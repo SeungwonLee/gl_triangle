@@ -45,14 +45,22 @@ object TxtLoaderUtil {
         // black.
 //        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR)
 //        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR)
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
-                GLES20.GL_LINEAR.toFloat())
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER,
-                GLES20.GL_LINEAR.toFloat())
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,
-                GLES20.GL_CLAMP_TO_EDGE)
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,
-                GLES20.GL_CLAMP_TO_EDGE)
+        GLES20.glTexParameterf(
+            GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
+            GLES20.GL_LINEAR.toFloat()
+        )
+        GLES20.glTexParameterf(
+            GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER,
+            GLES20.GL_LINEAR.toFloat()
+        )
+        GLES20.glTexParameteri(
+            GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,
+            GLES20.GL_CLAMP_TO_EDGE
+        )
+        GLES20.glTexParameteri(
+            GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,
+            GLES20.GL_CLAMP_TO_EDGE
+        )
 
         // Load the bitmap into the bound texture.
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0)
@@ -117,13 +125,15 @@ object TxtLoaderUtil {
         // Bitmap / PNG creation.
 
         val mPixelBuf = ByteBuffer.allocateDirect(width * height * 4)
-                .order(ByteOrder.nativeOrder())
+            .order(ByteOrder.nativeOrder())
 
-        GLES20.glReadPixels(0, 0, width, height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE,
-                mPixelBuf)
+        GLES20.glReadPixels(
+            0, 0, width, height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE,
+            mPixelBuf
+        )
 
         Log.d(TAG, "size=" + mPixelBuf.position())
-        
+
         var bos: BufferedOutputStream? = null
         val path = txtSavePath
         try {
@@ -174,16 +184,26 @@ object TxtLoaderUtil {
         // allocated ahead of time if possible.  We still get some allocations from the
         // Bitmap / PNG creation.
 
-        val mPixelBuf = ByteBuffer.allocateDirect(width * height * 4)
-                .order(ByteOrder.nativeOrder())
+        val mPixelBuf = ByteBuffer.allocate(width * height * 4)
 
         val frame = IntArray(1)
         GLES20.glGenFramebuffers(1, frame, 0)
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frame[0])
-        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, textureId, 0)
 
-        GLES20.glReadPixels(0, 0, width, height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE,
-                mPixelBuf)
+        GLES20.glFramebufferTexture2D(
+            GLES20.GL_FRAMEBUFFER,
+            GLES20.GL_COLOR_ATTACHMENT0,
+            GLES20.GL_TEXTURE_2D,
+            textureId,
+            0
+        )
+
+        GLES20.glReadPixels(
+            0, 0, width, height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE,
+            mPixelBuf
+        )
+
+        Log.d(TAG, "Saved in $mPixelBuf")
 
         var bos: BufferedOutputStream? = null
         val path = txtSavePath

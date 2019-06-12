@@ -96,8 +96,8 @@ class TextureRenderer(private val context: Context) : GLSurfaceView.Renderer {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, bitmapHandle)
         GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawOrder.size, GLES20.GL_UNSIGNED_SHORT, drawOrderBuffer)
 
-        if (captured == 0) {
-            TxtLoaderUtil.saveFrame(txtHandle, width, height)
+        if (captured < 5) {
+            TxtLoaderUtil.saveFrame(bitmapHandle, width, height)
             captured++
         }
 

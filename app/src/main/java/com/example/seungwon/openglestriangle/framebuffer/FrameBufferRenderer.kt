@@ -86,6 +86,10 @@ class FrameBufferRenderer(val context: Context) : GLSurfaceView.Renderer {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(1.0f, 0.0f, 0.0f, 0.0f)
 
+        // OpenGL that future texture calls should be applied to this texture object
+        // draw bogum
+
+
         positionHandle = GLES20.glGetAttribLocation(program, "vPosition")
         GLES20.glEnableVertexAttribArray(positionHandle)
         GLES20.glVertexAttribPointer(positionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, vertexBuffer)
@@ -98,41 +102,38 @@ class FrameBufferRenderer(val context: Context) : GLSurfaceView.Renderer {
         matrixHandle = GLES20.glGetUniformLocation(program, "uMVPMatrix")
         GLES20.glUniformMatrix4fv(matrixHandle, 1, false, projectionMatrix, 0)
 
-        // OpenGL that future texture calls should be applied to this texture object
-        // draw bogum
-//        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBufferHandle)
-
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBufferHandle)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, bitmapHandle)
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4)
 
         // rotate cat
-        val copyProjectionMatrix = FloatArray(16)
-        val matrixViewMatrix = FloatArray(16)
-
-        Matrix.setIdentityM(matrixViewMatrix, 0)
-
-        System.arraycopy(projectionMatrix, 0, copyProjectionMatrix, 0, copyProjectionMatrix.size)
-
-        Matrix.rotateM(matrixViewMatrix, 0, angleOffset % 360f, 0f, 1f, -1f)
+//        val copyProjectionMatrix = FloatArray(16)
+//        val matrixViewMatrix = FloatArray(16)
+//
+//        Matrix.setIdentityM(matrixViewMatrix, 0)
+//
+//        System.arraycopy(projectionMatrix, 0, copyProjectionMatrix, 0, copyProjectionMatrix.size)
+//
+//        Matrix.rotateM(matrixViewMatrix, 0, angleOffset % 360f, 0f, 1f, -1f)
 
         // copy to projection
-        val temp = FloatArray(16)
-        Matrix.multiplyMM(temp, 0, copyProjectionMatrix, 0, matrixViewMatrix, 0)
-        System.arraycopy(temp, 0, copyProjectionMatrix, 0, temp.size)
+//        val temp = FloatArray(16)
+//        Matrix.multiplyMM(temp, 0, copyProjectionMatrix, 0, matrixViewMatrix, 0)
+//        System.arraycopy(temp, 0, copyProjectionMatrix, 0, temp.size)
 
         // draw cat
 //        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, catFrameBufferHandle)
 
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, catBitmapHandle)
-
-        // Attach Texture to FBO.
-        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, catBitmapHandle, 0)
-
-        GLES20.glVertexAttribPointer(positionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, catVertexBuffer)
-
-        GLES20.glUniformMatrix4fv(matrixHandle, 1, false, copyProjectionMatrix, 0)
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4)
+//        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, catBitmapHandle)
+//
+//        // Attach Texture to FBO.
+//        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, catBitmapHandle, 0)
+//
+//        GLES20.glVertexAttribPointer(positionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, catVertexBuffer)
+//
+//        GLES20.glUniformMatrix4fv(matrixHandle, 1, false, copyProjectionMatrix, 0)
+//        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4)
 
         if(isFirst) {
             TxtLoaderUtil.saveFrame(bitmapHandle, width, height)
@@ -142,9 +143,9 @@ class FrameBufferRenderer(val context: Context) : GLSurfaceView.Renderer {
         GLES20.glDisableVertexAttribArray(positionHandle)
         GLES20.glDisableVertexAttribArray(txtCoordHandle)
 
-        angleOffset += 1
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
+//        angleOffset += 1
+//        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
+//        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
 
     }
 
@@ -209,23 +210,24 @@ class FrameBufferRenderer(val context: Context) : GLSurfaceView.Renderer {
         GLES20.glLinkProgram(program)
         GLES20.glUseProgram(program)
 
-        val bitmap = TxtLoaderUtil.getBitmap(context, R.drawable.bogum)
-        bitmapHandle = TxtLoaderUtil.getTxt(bitmap)
-
-        val catBitmap = TxtLoaderUtil.getBitmap(context, R.drawable.cuty_cat_3)
-        catBitmapHandle = TxtLoaderUtil.getTxt(catBitmap)
-
-        bitmap.recycle()
-        catBitmap.recycle()
-
         // Generate the frame buffer object.
         frameBufferHandle = initFrameBuffer()
-        attachFrameBuffer(bitmapHandle)
 
         // Generate the frame buffer object.
 //        catFrameBufferHandle = initFrameBuffer()
 //        attachFrameBuffer(catBitmapHandle)
-        attachFrameBuffer(catBitmapHandle)
+//        attachFrameBuffer(catBitmapHandle)
+
+        val bitmap = TxtLoaderUtil.getBitmap(context, R.drawable.bogum)
+        bitmapHandle = TxtLoaderUtil.getTxt(bitmap)
+
+        attachFrameBuffer(bitmapHandle)
+//        val catBitmap = TxtLoaderUtil.getBitmap(context, R.drawable.cuty_cat_3)
+//        catBitmapHandle = TxtLoaderUtil.getTxt(catBitmap)
+
+        bitmap.recycle()
+//        catBitmap.recycle()
+
     }
 
     private fun attachFrameBuffer(txtHandleId: Int): Int {
