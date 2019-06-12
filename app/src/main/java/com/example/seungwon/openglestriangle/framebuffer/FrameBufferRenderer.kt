@@ -18,6 +18,10 @@ import javax.microedition.khronos.opengles.GL10
 
 
 class FrameBufferRenderer(val context: Context) : GLSurfaceView.Renderer {
+    private var isFirst: Boolean = true
+    private var width: Int = 0
+    private var height: Int = 0
+
     private val squareCoords: FloatArray = floatArrayOf(
             // X, Y
             -1f, -1f,
@@ -96,9 +100,9 @@ class FrameBufferRenderer(val context: Context) : GLSurfaceView.Renderer {
 
         // OpenGL that future texture calls should be applied to this texture object
         // draw bogum
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, bitmapHandle)
-
 //        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBufferHandle)
+
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, bitmapHandle)
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4)
 
@@ -118,9 +122,9 @@ class FrameBufferRenderer(val context: Context) : GLSurfaceView.Renderer {
         System.arraycopy(temp, 0, copyProjectionMatrix, 0, temp.size)
 
         // draw cat
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, catBitmapHandle)
-
 //        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, catFrameBufferHandle)
+
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, catBitmapHandle)
 
         // Attach Texture to FBO.
         GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, catBitmapHandle, 0)
@@ -130,15 +134,24 @@ class FrameBufferRenderer(val context: Context) : GLSurfaceView.Renderer {
         GLES20.glUniformMatrix4fv(matrixHandle, 1, false, copyProjectionMatrix, 0)
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4)
 
+        if(isFirst) {
+            TxtLoaderUtil.saveFrame(bitmapHandle, width, height)
+            isFirst = false
+        }
+
         GLES20.glDisableVertexAttribArray(positionHandle)
         GLES20.glDisableVertexAttribArray(txtCoordHandle)
 
         angleOffset += 1
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
+
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
+        this.width = width
+        this.height = height
+
         GLES20.glViewport(0, 0, width, height)
 
         val aspectRatio = if (width > height)
@@ -210,7 +223,8 @@ class FrameBufferRenderer(val context: Context) : GLSurfaceView.Renderer {
         attachFrameBuffer(bitmapHandle)
 
         // Generate the frame buffer object.
-        catFrameBufferHandle = initFrameBuffer()
+//        catFrameBufferHandle = initFrameBuffer()
+//        attachFrameBuffer(catBitmapHandle)
         attachFrameBuffer(catBitmapHandle)
     }
 

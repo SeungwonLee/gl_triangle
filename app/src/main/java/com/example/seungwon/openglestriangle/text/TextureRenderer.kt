@@ -1,12 +1,10 @@
 package com.example.seungwon.openglestriangle.text
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
-import android.opengl.GLUtils
 import android.opengl.Matrix
+import android.os.Environment
 import android.util.Log
 import com.example.seungwon.openglestriangle.R
 import com.example.seungwon.openglestriangle.ShaderInfo
@@ -51,6 +49,10 @@ class TextureRenderer(private val context: Context) : GLSurfaceView.Renderer {
     private var matrixHandle: Int = 0
     private var bitmapHandle: Int = 0
 
+    private var width = 0
+    private var height = 0
+    private var captured = 0
+
     init {
         vertexBuffer = ByteBuffer.allocateDirect(squareCoords.size * 4)
                 .order(ByteOrder.nativeOrder())
@@ -94,11 +96,18 @@ class TextureRenderer(private val context: Context) : GLSurfaceView.Renderer {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, bitmapHandle)
         GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawOrder.size, GLES20.GL_UNSIGNED_SHORT, drawOrderBuffer)
 
+        if (captured == 0) {
+            TxtLoaderUtil.saveFrame(txtHandle, width, height)
+            captured++
+        }
+
         GLES20.glDisableVertexAttribArray(positionHandle)
         GLES20.glDisableVertexAttribArray(txtHandle)
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
+        this.width = width
+        this.height = height
         GLES20.glViewport(0, 0, width, height)
     }
 
