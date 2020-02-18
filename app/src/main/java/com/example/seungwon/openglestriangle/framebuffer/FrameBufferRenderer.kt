@@ -6,9 +6,8 @@ import android.opengl.GLES30
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
 import android.util.Log
+import com.example.seungwon.openglestriangle.ProgramInfo
 import com.example.seungwon.openglestriangle.R
-import com.example.seungwon.openglestriangle.ShaderInfo
-import com.example.seungwon.openglestriangle.TextResourceReader
 import com.example.seungwon.openglestriangle.util.TxtLoaderUtil
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -23,25 +22,25 @@ class FrameBufferRenderer(val context: Context) : GLSurfaceView.Renderer {
     private var height: Int = 0
 
     private val squareCoords: FloatArray = floatArrayOf(
-            // X, Y
-            -1f, -1f,
-            1f, -1f,
-            1f, 1f,
-            -1f, 1f
+        // X, Y
+        -1f, -1f,
+        1f, -1f,
+        1f, 1f,
+        -1f, 1f
     )
     private val catCoords: FloatArray = floatArrayOf(
-            // X, Y
-            0.3f, 0.3f,
-            0.7f, 0.3f,
-            0.7f, 0.7f,
-            0.3f, 0.7f
+        // X, Y
+        0.3f, 0.3f,
+        0.7f, 0.3f,
+        0.7f, 0.7f,
+        0.3f, 0.7f
     )
     private val txtCoords: FloatArray = floatArrayOf(
-            // U, V
-            0f, 1f,
-            1f, 1f,
-            1f, 0f,
-            0f, 0f
+        // U, V
+        0f, 1f,
+        1f, 1f,
+        1f, 0f,
+        0f, 0f
     )
     private val matrixView = FloatArray(16)
     private val projectionMatrix = FloatArray(16)
@@ -64,21 +63,21 @@ class FrameBufferRenderer(val context: Context) : GLSurfaceView.Renderer {
 
     init {
         vertexBuffer = ByteBuffer.allocateDirect(squareCoords.size * FLOAT_SIZE_BYTES)
-                .order(ByteOrder.nativeOrder())
-                .asFloatBuffer()
-                .put(squareCoords)
+            .order(ByteOrder.nativeOrder())
+            .asFloatBuffer()
+            .put(squareCoords)
         vertexBuffer.position(0)
 
         txtBuffer = ByteBuffer.allocateDirect(txtCoords.size * FLOAT_SIZE_BYTES)
-                .order(ByteOrder.nativeOrder())
-                .asFloatBuffer()
-                .put(txtCoords)
+            .order(ByteOrder.nativeOrder())
+            .asFloatBuffer()
+            .put(txtCoords)
         txtBuffer.position(0)
 
         catVertexBuffer = ByteBuffer.allocateDirect(catCoords.size * FLOAT_SIZE_BYTES)
-                .order(ByteOrder.nativeOrder())
-                .asFloatBuffer()
-                .put(catCoords)
+            .order(ByteOrder.nativeOrder())
+            .asFloatBuffer()
+            .put(catCoords)
         catVertexBuffer.position(0)
     }
 
@@ -92,11 +91,25 @@ class FrameBufferRenderer(val context: Context) : GLSurfaceView.Renderer {
 
         positionHandle = GLES20.glGetAttribLocation(program, "vPosition")
         GLES20.glEnableVertexAttribArray(positionHandle)
-        GLES20.glVertexAttribPointer(positionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, vertexBuffer)
+        GLES20.glVertexAttribPointer(
+            positionHandle,
+            COORDS_PER_VERTEX,
+            GLES20.GL_FLOAT,
+            false,
+            0,
+            vertexBuffer
+        )
 
         txtCoordHandle = GLES20.glGetAttribLocation(program, "a_texCoord")
         GLES20.glEnableVertexAttribArray(txtCoordHandle)
-        GLES20.glVertexAttribPointer(txtCoordHandle, TXT_COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, txtBuffer)
+        GLES20.glVertexAttribPointer(
+            txtCoordHandle,
+            TXT_COORDS_PER_VERTEX,
+            GLES20.GL_FLOAT,
+            false,
+            0,
+            txtBuffer
+        )
 
         // matrixHandle will be used in orthoM for projection.
         matrixHandle = GLES20.glGetUniformLocation(program, "uMVPMatrix")
@@ -135,7 +148,7 @@ class FrameBufferRenderer(val context: Context) : GLSurfaceView.Renderer {
 //        GLES20.glUniformMatrix4fv(matrixHandle, 1, false, copyProjectionMatrix, 0)
 //        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4)
 
-        if(isFirst) {
+        if (isFirst) {
             TxtLoaderUtil.saveFrame(bitmapHandle, width, height)
             isFirst = false
         }
@@ -183,31 +196,11 @@ class FrameBufferRenderer(val context: Context) : GLSurfaceView.Renderer {
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         GLES20.glClearColor(0.0f, 1.0f, 0.0f, 0.0f)
 
-        val vertextCodeString = TextResourceReader.readTextFileFromResource(context, R.raw.simple_txt_vertex_shader)
-        val vertexShader = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER)
-        GLES20.glShaderSource(vertexShader, vertextCodeString)
-        GLES20.glCompileShader(vertexShader)
-
-        ShaderInfo.getShaderStatus(vertexShader)
-
-        val fragmentCodeString = TextResourceReader.readTextFileFromResource(context, R.raw.simple_txt_fragment_shader)
-        val fragmentShader = GLES20.glCreateShader(GLES20.GL_FRAGMENT_SHADER)
-        GLES20.glShaderSource(fragmentShader, fragmentCodeString)
-        GLES20.glCompileShader(fragmentShader)
-
-        ShaderInfo.getShaderStatus(fragmentShader)
-
-        // Link verticesShader, fragmentShader to OpenGL
-        program = GLES20.glCreateProgram()
-
-        if (program == 0) {
-            Log.w(TAG, "Could not create new program")
-        }
-
-        GLES20.glAttachShader(program, vertexShader)
-        GLES20.glAttachShader(program, fragmentShader)
-
-        GLES20.glLinkProgram(program)
+        program = ProgramInfo.createProgram(
+            context,
+            R.raw.simple_txt_vertex_shader,
+            R.raw.simple_txt_fragment_shader
+        )
         GLES20.glUseProgram(program)
 
         // Generate the frame buffer object.
@@ -235,7 +228,13 @@ class FrameBufferRenderer(val context: Context) : GLSurfaceView.Renderer {
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBufferHandle)
 
         // Attach Texture to FBO.
-        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES30.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, txtHandleId, 0)
+        GLES20.glFramebufferTexture2D(
+            GLES20.GL_FRAMEBUFFER,
+            GLES30.GL_COLOR_ATTACHMENT0,
+            GLES20.GL_TEXTURE_2D,
+            txtHandleId,
+            0
+        )
 
         val status = GLES20.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER)
         Log.e(TAG, "status=${(status == GLES20.GL_FRAMEBUFFER_COMPLETE)}")
@@ -260,6 +259,7 @@ class FrameBufferRenderer(val context: Context) : GLSurfaceView.Renderer {
         private const val COORDS_PER_VERTEX = 2
         private const val TXT_COORDS_PER_VERTEX = 2
         private const val FLOAT_SIZE_BYTES = 4
-        private const val TRIANGLE_VERTICES_DATA_STRIDE_BYTES = (COORDS_PER_VERTEX + TXT_COORDS_PER_VERTEX) * FLOAT_SIZE_BYTES
+        private const val TRIANGLE_VERTICES_DATA_STRIDE_BYTES =
+            (COORDS_PER_VERTEX + TXT_COORDS_PER_VERTEX) * FLOAT_SIZE_BYTES
     }
 }
