@@ -68,4 +68,11 @@
         android:text="FBO-Texture"
         app:layout_constraintTop_toBottomOf="@+id/multi_txt_opengl_btn" />
 
+    <Button
+        android:id="@+id/blur_txt_opengl_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Blur Texture"
+        app:layout_constraintTop_toBottomOf="@+id/framebuffer_txt_opengl_btn" />
+
 </android.support.constraint.ConstraintLayout>

@@ -9,20 +9,21 @@ object FrameBufferUtil {
     private const val TAG = "FrameBufferUtil"
 
     fun createFrameTextureBuffer(): TextureFrameBuffer {
+        // Generate texture object.
         val textureIds = IntArray(2)
         GLES20.glGenTextures(1, textureIds, 0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureIds[0])
         GLES20.glTexImage2D(
             GLES20.GL_TEXTURE_2D,
             0,
-            GLES20.GL_RGB,
+            GLES20.GL_RGBA,
             1024,
             1024,
             0,
-            GLES20.GL_RGB,
+            GLES20.GL_RGBA,
             GLES20.GL_UNSIGNED_BYTE,
             null
-        )
+        ) // TODO 3.0
         GLES20.glTexParameteri(
             GLES20.GL_TEXTURE_2D,
             GLES20.GL_TEXTURE_WRAP_S,
@@ -46,7 +47,6 @@ object FrameBufferUtil {
 
         // Generate frame buffer object.
         val frameBufferIds = IntArray(2)
-
         GLES20.glGenFramebuffers(1, frameBufferIds, 0)
         Log.d(TAG, "glGenFramebuffers ${frameBufferIds[0]}")
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBufferIds[0])

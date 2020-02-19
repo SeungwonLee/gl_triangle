@@ -5,6 +5,7 @@ import android.opengl.GLES20
 import android.opengl.GLES20.GL_VALIDATE_STATUS
 import android.opengl.GLES20.glGetProgramInfoLog
 import android.opengl.GLES20.glValidateProgram
+import android.opengl.GLES30
 import android.util.Log
 
 
@@ -31,6 +32,38 @@ object ProgramInfo {
 
         Log.v("ProgramInfo", "Results of validating Success")
         return result
+    }
+
+    fun createProgramV30(context: Context, vertexShaderId: Int, fragmentShaderId: Int): Int {
+        val vertexCodeString =
+            TextResourceReader.readTextFileFromResource(context, vertexShaderId)
+        val vertexShader = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER)
+        GLES30.glShaderSource(vertexShader, vertexCodeString)
+        GLES30.glCompileShader(vertexShader)
+
+        ShaderInfo.getShaderStatus(vertexShader)
+
+        val fragmentCodeString =
+            TextResourceReader.readTextFileFromResource(context, fragmentShaderId)
+        val fragmentShader = GLES20.glCreateShader(GLES20.GL_FRAGMENT_SHADER)
+        GLES30.glShaderSource(fragmentShader, fragmentCodeString)
+        GLES30.glCompileShader(fragmentShader)
+
+        ShaderInfo.getShaderStatus(fragmentShader)
+
+        // Link verticesShader, fragmentShader to OpenGL
+        val program = GLES30.glCreateProgram()
+
+        if (program == 0) {
+            throw Error("Could not create new program")
+        }
+
+        GLES30.glAttachShader(program, vertexShader)
+        GLES30.glAttachShader(program, fragmentShader)
+
+        GLES30.glLinkProgram(program)
+        validateProgram(program)
+        return program
     }
 
     fun createProgram(context: Context, vertexShaderId: Int, fragmentShaderId: Int): Int {

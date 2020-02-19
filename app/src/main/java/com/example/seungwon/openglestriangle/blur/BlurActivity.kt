@@ -13,8 +13,8 @@ class BlurActivity : AppCompatActivity() {
 
         glSurfaceView = findViewById(R.id.blur_surface_view)
         glSurfaceView?.let {
+            it.setEGLContextClientVersion(3)
             it.setRenderer(BlurRenderer(this))
-            it.setEGLContextClientVersion(2)
         }
     }
 
