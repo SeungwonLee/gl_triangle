@@ -22,13 +22,15 @@ class BlurRenderer(private val context: Context) : GLSurfaceView.Renderer {
         1.0f, 1.0f   // 3 top right
     )
     private val txtCoords: FloatArray = floatArrayOf(
-        0.0f, 0.0f,     // 0 bottom left
-        1.0f, 0.0f,     // 1 bottom right
         0.0f, 1.0f,     // 2 top left
-        1.0f, 1.0f    // 3 top right
+        1.0f, 1.0f,    // 3 top right
+        0.0f, 0.0f,     // 0 bottom left
+        1.0f, 0.0f     // 1 bottom right
     )
     private val vertexBuffer: FloatBuffer
     private val txtBuffer: FloatBuffer
+
+    private val matrixView: FloatArray = FloatArray(16)
 
     private var passThroughProgram: Int = 0
     private var guassianVerticalProgram: Int = 0
@@ -60,19 +62,51 @@ class BlurRenderer(private val context: Context) : GLSurfaceView.Renderer {
         txtBuffer = ByteBuffer.allocateDirect(txtCoords.size * FLOAT_BYTE_SIZE)
             .order(ByteOrder.nativeOrder())
             .asFloatBuffer()
-        txtBuffer.put(txtCoords)
+            .put(txtCoords)
+        txtBuffer.position(0)
     }
 
     override fun onDrawFrame(gl: GL10?) {
         GLES20.glClearColor(0f, 0f, 0f, 1f)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
 
+        Matrix.setIdentityM(matrixView, 0)
+//
+//        positionHandle = GLES20.glGetAttribLocation(passThroughProgram, "vPosition")
+//        GLES20.glEnableVertexAttribArray(positionHandle)
+//        GLES20.glVertexAttribPointer(
+//            positionHandle, X_Y_COORDS_NUMBER, GLES20.GL_FLOAT, false,
+//            0, vertexBuffer
+//        )
+//
+//        textureCoordsHandle = GLES20.glGetAttribLocation(passThroughProgram, "a_texCoord")
+//        GLES20.glEnableVertexAttribArray(textureCoordsHandle)
+//        GLES20.glVertexAttribPointer(
+//            textureCoordsHandle,
+//            TEXTURE_COORDS_VERTEX_NUMBER,
+//            GLES20.GL_FLOAT,
+//            false,
+//            0,
+//            txtBuffer
+//        )
+//
+//        // matrixHandle will be used in orthoM for projection.
+//        mvpHandle = GLES20.glGetUniformLocation(passThroughProgram, "uMVPMatrix")
+//        GLES20.glUniformMatrix4fv(mvpHandle, 1, false, matrixView, 0)
+//
+//        // OpenGL that future texture calls should be applied to this texture object
+//        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
+//        GLES20.glDrawArrays(
+//            GLES20.GL_TRIANGLE_STRIP,
+//            0,
+//            squareCoords.size / X_Y_COORDS_NUMBER
+//        )
+
+
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
 
-        val identityMatrix = FloatArray(16)
-        Matrix.setIdentityM(identityMatrix, 0)
-        GLES20.glUniformMatrix4fv(mvpHandle, 1, false, identityMatrix, 0)
-        GLES20.glUniformMatrix4fv(textureMvpHandle, 1, false, identityMatrix, 0)
+        GLES20.glUniformMatrix4fv(mvpHandle, 1, false, matrixView, 0)
+        GLES20.glUniformMatrix4fv(textureMvpHandle, 1, false, matrixView, 0)
 
         GLES20.glEnableVertexAttribArray(positionHandle)
         GLES20.glVertexAttribPointer(
@@ -102,11 +136,17 @@ class BlurRenderer(private val context: Context) : GLSurfaceView.Renderer {
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
         this.width = width
         this.height = height
-        GLES20.glViewport(0, 0, width, height)
+
+//        GLES20.glViewport(0, 0, width, height)
     }
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         // load shaders
+//        passThroughProgram = ProgramInfo.createProgram(
+//            context,
+//            R.raw.simple_txt_vertex_shader,
+//            R.raw.simple_txt_fragment_shader
+//        )
         passThroughProgram = ProgramInfo.createProgram(
             context,
             R.raw.blur_pass_through_vertex_shader,
@@ -125,11 +165,15 @@ class BlurRenderer(private val context: Context) : GLSurfaceView.Renderer {
         texelWidthOffset = GLES20.glGetUniformLocation(passThroughProgram, "uTexelWidthOffset")
         texelHeightOffset = GLES20.glGetUniformLocation(passThroughProgram, "uTexelHeightOffset")
 
-        val bitmap = TxtLoaderUtil.getBitmap(context, R.drawable.bogum)
+        val bitmap = TxtLoaderUtil.getBitmap(context, R.drawable.aliasing)
+        val bitmapWidth = bitmap.width
         textureId = TxtLoaderUtil.getTxt(bitmap)
 
 //        GLES20.glUniform1f(texelHeightOffset, if (width == 0) 0f else BLUR_RATIO / height)
-        GLES20.glUniform1f(texelWidthOffset, /*if (width == 0) 0f else BLUR_RATIO / width*/0f)
+        GLES20.glUniform1f(
+            texelWidthOffset,
+            BLUR_RATIO / bitmapWidth.toFloat()
+        )
     }
 
     companion object {

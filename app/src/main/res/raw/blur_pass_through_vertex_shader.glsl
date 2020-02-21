@@ -1,8 +1,7 @@
 #define SAMPLES 9
-precision mediump float;
 
-uniform mat4 uMVPMatrix;  // MVP의 변형 매트릭스 (전체 변형)
-uniform mat4 uTexMatrix;  // 텍스처 변형 매트릭스 (텍스처 변형 만 해당)
+uniform mat4 uMVPMatrix;// MVP의 변형 매트릭스 (전체 변형)
+uniform mat4 uTexMatrix;// 텍스처 변형 매트릭스 (텍스처 변형 만 해당)
 
 uniform float uTexelWidthOffset;
 uniform float uTexelHeightOffset;
