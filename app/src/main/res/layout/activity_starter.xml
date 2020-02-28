@@ -75,4 +75,11 @@
         android:text="Blur Texture"
         app:layout_constraintTop_toBottomOf="@+id/framebuffer_txt_opengl_btn" />
 
+    <Button
+        android:id="@+id/blur_framebuffer_txt_opengl_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Blur(framebuffer) Texture"
+        app:layout_constraintTop_toBottomOf="@+id/blur_txt_opengl_btn" />
+
 </android.support.constraint.ConstraintLayout>

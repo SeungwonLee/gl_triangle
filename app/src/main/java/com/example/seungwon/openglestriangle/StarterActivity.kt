@@ -4,15 +4,16 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.widget.Button
+import com.example.seungwon.openglestriangle.blur.Blur2Activity
 import com.example.seungwon.openglestriangle.blur.BlurActivity
 import com.example.seungwon.openglestriangle.filter.FilterActivity
 import com.example.seungwon.openglestriangle.filter.emboss.EmbossActivity
 import com.example.seungwon.openglestriangle.framebuffer.FrameBufferRendererActivity
 import com.example.seungwon.openglestriangle.multiTxt.MultiTxtActivity
 import com.example.seungwon.openglestriangle.projection.ProjectionActivity
-import com.example.seungwon.openglestriangle.translation.SquareActivity
 import com.example.seungwon.openglestriangle.projection.translation.StripActivity
 import com.example.seungwon.openglestriangle.text.TextureActivity
+import com.example.seungwon.openglestriangle.translation.SquareActivity
 import com.example.seungwon.openglestriangle.triangle.MainActivity
 
 class StarterActivity : AppCompatActivity() {
@@ -50,6 +51,9 @@ class StarterActivity : AppCompatActivity() {
         }
         findViewById<Button>(R.id.blur_txt_opengl_btn).setOnClickListener {
             startActivity(Intent(this, BlurActivity::class.java))
+        }
+        findViewById<Button>(R.id.blur_framebuffer_txt_opengl_btn).setOnClickListener {
+            startActivity(Intent(this, Blur2Activity::class.java))
         }
     }
 }

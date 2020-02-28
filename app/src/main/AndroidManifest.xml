@@ -17,7 +17,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".blur.BlurActivity"></activity>
+        <activity android:name=".blur.Blur2Activity"></activity>
+        <activity android:name=".blur.BlurActivity" />
         <activity android:name=".framebuffer.FrameBufferRendererActivity" />
         <activity android:name=".multiTxt.MultiTxtActivity" />
         <activity android:name=".filter.emboss.EmbossActivity" />

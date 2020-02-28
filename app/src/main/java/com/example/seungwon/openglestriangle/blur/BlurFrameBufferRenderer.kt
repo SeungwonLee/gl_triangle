@@ -14,7 +14,7 @@ import java.nio.FloatBuffer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-class BlurRenderer(private val context: Context) : GLSurfaceView.Renderer {
+class BlurFrameBufferRenderer(private val context: Context) : GLSurfaceView.Renderer {
     private val squareCoords: FloatArray = floatArrayOf(
         -1.0f, -1.0f,   // 0 bottom left
         1.0f, -1.0f,   // 1 bottom right
@@ -102,9 +102,6 @@ class BlurRenderer(private val context: Context) : GLSurfaceView.Renderer {
 //            squareCoords.size / X_Y_COORDS_NUMBER
 //        )
 
-
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
-
         GLES20.glUniformMatrix4fv(mvpHandle, 1, false, matrixView, 0)
         GLES20.glUniformMatrix4fv(textureMvpHandle, 1, false, matrixView, 0)
 
@@ -123,6 +120,34 @@ class BlurRenderer(private val context: Context) : GLSurfaceView.Renderer {
             txtBuffer
         )
 
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, textureFrameBuffers[0].frameBufferId)
+
+        GLES20.glDrawArrays(
+            GLES20.GL_TRIANGLE_STRIP,
+            0,
+            squareCoords.size / X_Y_COORDS_NUMBER
+        )
+
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureFrameBuffers[0].textureId)
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, textureFrameBuffers[1].frameBufferId)
+        GLES20.glDrawArrays(
+            GLES20.GL_TRIANGLE_STRIP,
+            0,
+            squareCoords.size / X_Y_COORDS_NUMBER
+        )
+
+
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureFrameBuffers[1].textureId)
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, textureFrameBuffers[0].frameBufferId)
+        GLES20.glDrawArrays(
+            GLES20.GL_TRIANGLE_STRIP,
+            0,
+            squareCoords.size / X_Y_COORDS_NUMBER
+        )
+
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureFrameBuffers[0].textureId)
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
         GLES20.glDrawArrays(
             GLES20.GL_TRIANGLE_STRIP,
             0,
@@ -136,6 +161,9 @@ class BlurRenderer(private val context: Context) : GLSurfaceView.Renderer {
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
         this.width = width
         this.height = height
+
+        textureFrameBuffers.add(FrameBufferUtil.createFrameTextureBuffer(width, height))
+        textureFrameBuffers.add(FrameBufferUtil.createFrameTextureBuffer(width, height))
 
 //        GLES20.glViewport(0, 0, width, height)
     }
@@ -169,6 +197,8 @@ class BlurRenderer(private val context: Context) : GLSurfaceView.Renderer {
         val bitmapWidth = bitmap.width
         textureId = TxtLoaderUtil.getTxt(bitmap)
 
+
+
 //        GLES20.glUniform1f(texelHeightOffset, if (width == 0) 0f else BLUR_RATIO / height)
         GLES20.glUniform1f(
             texelWidthOffset,
@@ -185,6 +215,6 @@ class BlurRenderer(private val context: Context) : GLSurfaceView.Renderer {
         private const val SQUARE_LINE_COUNT = 6
         private const val TEXTURE_COORDS_VERTEX_NUMBER = 2
 
-        private const val BLUR_RATIO = 1.0f
+        private const val BLUR_RATIO = 1f
     }
 }

@@ -5,16 +5,17 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import com.example.seungwon.openglestriangle.R
 
-class BlurActivity : AppCompatActivity() {
+class Blur2Activity : AppCompatActivity() {
     private var glSurfaceView: GLSurfaceView? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_blur)
+        setContentView(R.layout.activity_blur2)
 
-        glSurfaceView = findViewById(R.id.blur_surface_view)
+        glSurfaceView = findViewById(R.id.blur_framebuffer_gl_surface)
         glSurfaceView?.let {
             it.setEGLContextClientVersion(2)
-            it.setRenderer(BlurRenderer(this))
+            it.setRenderer(BlurFrameBufferRenderer(this))
         }
     }
 
