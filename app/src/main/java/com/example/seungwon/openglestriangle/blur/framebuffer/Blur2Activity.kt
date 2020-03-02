@@ -1,4 +1,4 @@
-package com.example.seungwon.openglestriangle.blur
+package com.example.seungwon.openglestriangle.blur.framebuffer
 
 import android.opengl.GLSurfaceView
 import android.os.Bundle
@@ -15,7 +15,11 @@ class Blur2Activity : AppCompatActivity() {
         glSurfaceView = findViewById(R.id.blur_framebuffer_gl_surface)
         glSurfaceView?.let {
             it.setEGLContextClientVersion(2)
-            it.setRenderer(BlurFrameBufferRenderer(this))
+            it.setRenderer(
+                BlurFrameBufferRenderer(
+                    this
+                )
+            )
         }
     }
 

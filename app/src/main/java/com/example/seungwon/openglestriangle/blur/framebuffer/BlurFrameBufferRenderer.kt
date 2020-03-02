@@ -1,4 +1,4 @@
-package com.example.seungwon.openglestriangle.blur
+package com.example.seungwon.openglestriangle.blur.framebuffer
 
 import android.content.Context
 import android.opengl.GLES20
@@ -107,7 +107,8 @@ class BlurFrameBufferRenderer(private val context: Context) : GLSurfaceView.Rend
 
         GLES20.glEnableVertexAttribArray(positionHandle)
         GLES20.glVertexAttribPointer(
-            positionHandle, X_Y_COORDS_NUMBER, GLES20.GL_FLOAT, false,
+            positionHandle,
+            X_Y_COORDS_NUMBER, GLES20.GL_FLOAT, false,
             X_Y_COORDS_NUMBER * FLOAT_BYTE_SIZE, vertexBuffer
         )
         GLES20.glEnableVertexAttribArray(textureCoordsHandle)
