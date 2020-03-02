@@ -3,10 +3,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".blur.framebuffer.Blur2Activity">
+    tools:context=".blur.rect.BlurRectActivity">
+
+    <ImageView
+        android:id="@+id/blur_rect_img_view"
+        android:layout_width="match_parent"
+        android:scaleType="fitXY"
+        android:layout_height="match_parent" />
 
     <android.opengl.GLSurfaceView
-        android:id="@+id/blur_framebuffer_gl_surface"
+        android:id="@+id/gl_surface"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
 </android.support.constraint.ConstraintLayout>

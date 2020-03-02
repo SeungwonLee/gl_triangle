@@ -165,7 +165,7 @@ class BlurRenderer(private val context: Context) : GLSurfaceView.Renderer {
         texelWidthOffset = GLES20.glGetUniformLocation(passThroughProgram, "uTexelWidthOffset")
         texelHeightOffset = GLES20.glGetUniformLocation(passThroughProgram, "uTexelHeightOffset")
 
-        val bitmap = TxtLoaderUtil.getBitmap(context, R.drawable.aliasing)
+        val bitmap = TxtLoaderUtil.getBitmap(context, R.drawable.park_dotori)
         val bitmapWidth = bitmap.width
         textureId = TxtLoaderUtil.getTxt(bitmap)
 
