@@ -22,6 +22,7 @@ class BlurRectActivity : AppCompatActivity(), View.OnTouchListener {
         glSurfaceView?.let {
             it.setEGLContextClientVersion(2)
             it.setRenderer(renderer)
+            // Draw only `requestRender()` called.
             it.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
             it.setOnTouchListener(this)
         }
@@ -43,7 +44,9 @@ class BlurRectActivity : AppCompatActivity(), View.OnTouchListener {
         if (event == null) {
             return false
         }
+
         Log.d("BlurRectActivity", "onTouch ${event.action} ${event.x} ${event.y}")
+
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 renderer.rectStartPointX = event.x
