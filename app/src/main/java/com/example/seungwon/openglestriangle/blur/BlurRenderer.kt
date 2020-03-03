@@ -181,8 +181,6 @@ class BlurRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
         private const val X_Y_COORDS_NUMBER = 2
         private const val FLOAT_BYTE_SIZE = 4
-        private const val SQUARE_X_Y_COUNT = 6
-        private const val SQUARE_LINE_COUNT = 6
         private const val TEXTURE_COORDS_VERTEX_NUMBER = 2
 
         private const val BLUR_RATIO = 1.0f
