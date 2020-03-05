@@ -5,7 +5,7 @@ import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.util.Log
 import com.example.seungwon.openglestriangle.R
-import com.example.seungwon.openglestriangle.ShaderInfo
+import com.example.seungwon.openglestriangle.ShaderStatusInfo
 import com.example.seungwon.openglestriangle.TextResourceReader
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -84,7 +84,7 @@ class SquareRenderer(private val context: Context) : GLSurfaceView.Renderer {
         GLES20.glShaderSource(vertexShader, vertextCodeString)
         GLES20.glCompileShader(vertexShader)
 
-        ShaderInfo.getShaderStatus(vertexShader)
+        ShaderStatusInfo.getShaderStatus(vertexShader)
 
         Log.d(TAG, "vertextCodeString $vertextCodeString")
 
@@ -93,7 +93,7 @@ class SquareRenderer(private val context: Context) : GLSurfaceView.Renderer {
         GLES20.glShaderSource(fragmentShader, fragmentCodeString)
         GLES20.glCompileShader(fragmentShader)
 
-        ShaderInfo.getShaderStatus(fragmentShader)
+        ShaderStatusInfo.getShaderStatus(fragmentShader)
 
         Log.d(TAG, "fragmentCodeString $fragmentCodeString")
 

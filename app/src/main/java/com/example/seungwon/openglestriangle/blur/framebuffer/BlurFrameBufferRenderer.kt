@@ -121,6 +121,14 @@ class BlurFrameBufferRenderer(private val context: Context) : GLSurfaceView.Rend
             txtBuffer
         )
 
+        // render scene to FBO A
+        // render FBO A to FBO B, using horizontal blur
+        // render FBO B to scene, using vertical blur
+
+        val blurOffset = 0.003155048076953f
+        // Draw single blurred image to FBO A
+        GLES20.glUniform1f(texelHeightOffset, 0f)
+        GLES20.glUniform1f(texelWidthOffset, blurOffset)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, textureFrameBuffers[0].frameBufferId)
 
@@ -130,6 +138,9 @@ class BlurFrameBufferRenderer(private val context: Context) : GLSurfaceView.Rend
             squareCoords.size / X_Y_COORDS_NUMBER
         )
 
+        // Draw FBO A to FBO B
+        GLES20.glUniform1f(texelHeightOffset, blurOffset)
+        GLES20.glUniform1f(texelWidthOffset, 0f)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureFrameBuffers[0].textureId)
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, textureFrameBuffers[1].frameBufferId)
         GLES20.glDrawArrays(
@@ -138,7 +149,9 @@ class BlurFrameBufferRenderer(private val context: Context) : GLSurfaceView.Rend
             squareCoords.size / X_Y_COORDS_NUMBER
         )
 
-
+        // Draw FBO B to FBO A
+        GLES20.glUniform1f(texelHeightOffset, blurOffset)
+        GLES20.glUniform1f(texelWidthOffset, blurOffset)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureFrameBuffers[1].textureId)
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, textureFrameBuffers[0].frameBufferId)
         GLES20.glDrawArrays(
@@ -147,6 +160,9 @@ class BlurFrameBufferRenderer(private val context: Context) : GLSurfaceView.Rend
             squareCoords.size / X_Y_COORDS_NUMBER
         )
 
+        // Draw FBO A to main frame buffer
+        GLES20.glUniform1f(texelHeightOffset, 0f)
+        GLES20.glUniform1f(texelWidthOffset, 0f)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureFrameBuffers[0].textureId)
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
         GLES20.glDrawArrays(
@@ -194,16 +210,15 @@ class BlurFrameBufferRenderer(private val context: Context) : GLSurfaceView.Rend
         texelWidthOffset = GLES20.glGetUniformLocation(passThroughProgram, "uTexelWidthOffset")
         texelHeightOffset = GLES20.glGetUniformLocation(passThroughProgram, "uTexelHeightOffset")
 
-        val bitmap = TxtLoaderUtil.getBitmap(context, R.drawable.aliasing)
+        val bitmap = TxtLoaderUtil.getBitmap(context, R.drawable.park_dotori)
         val bitmapWidth = bitmap.width
+        val bitmapHeight = bitmap.height
         textureId = TxtLoaderUtil.getTxt(bitmap)
 
-
-
-//        GLES20.glUniform1f(texelHeightOffset, if (width == 0) 0f else BLUR_RATIO / height)
+        GLES20.glUniform1f(texelHeightOffset, BLUR_RATIO / /*bitmapHeight.toFloat()*/300f)
         GLES20.glUniform1f(
             texelWidthOffset,
-            BLUR_RATIO / bitmapWidth.toFloat()
+            BLUR_RATIO / /*bitmapWidth.toFloat()*/300f
         )
     }
 

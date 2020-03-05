@@ -16,7 +16,7 @@ class Blur2Activity : AppCompatActivity() {
         glSurfaceView?.let {
             it.setEGLContextClientVersion(2)
             it.setRenderer(
-                BlurFrameBufferRenderer(
+                BlurFrameBufferRenderer2(
                     this
                 )
             )
@@ -33,3 +33,4 @@ class Blur2Activity : AppCompatActivity() {
         glSurfaceView?.onPause()
     }
 }
+

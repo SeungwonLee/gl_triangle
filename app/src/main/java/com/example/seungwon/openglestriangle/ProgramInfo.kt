@@ -41,7 +41,7 @@ object ProgramInfo {
         GLES30.glShaderSource(vertexShader, vertexCodeString)
         GLES30.glCompileShader(vertexShader)
 
-        ShaderInfo.getShaderStatus(vertexShader)
+        ShaderStatusInfo.getShaderStatus(vertexShader)
 
         val fragmentCodeString =
             TextResourceReader.readTextFileFromResource(context, fragmentShaderId)
@@ -49,7 +49,7 @@ object ProgramInfo {
         GLES30.glShaderSource(fragmentShader, fragmentCodeString)
         GLES30.glCompileShader(fragmentShader)
 
-        ShaderInfo.getShaderStatus(fragmentShader)
+        ShaderStatusInfo.getShaderStatus(fragmentShader)
 
         // Link verticesShader, fragmentShader to OpenGL
         val program = GLES30.glCreateProgram()
@@ -73,7 +73,7 @@ object ProgramInfo {
         GLES20.glShaderSource(vertexShader, vertexCodeString)
         GLES20.glCompileShader(vertexShader)
 
-        ShaderInfo.getShaderStatus(vertexShader)
+        ShaderStatusInfo.getShaderStatus(vertexShader)
 
         val fragmentCodeString =
             TextResourceReader.readTextFileFromResource(context, fragmentShaderId)
@@ -81,7 +81,7 @@ object ProgramInfo {
         GLES20.glShaderSource(fragmentShader, fragmentCodeString)
         GLES20.glCompileShader(fragmentShader)
 
-        ShaderInfo.getShaderStatus(fragmentShader)
+        ShaderStatusInfo.getShaderStatus(fragmentShader)
 
         // Link verticesShader, fragmentShader to OpenGL
         val program = GLES20.glCreateProgram()

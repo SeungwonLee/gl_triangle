@@ -226,11 +226,12 @@ class BlurRectRenderer(private val context: Context) : GLSurfaceView.Renderer {
         val bitmapWidth = VERTEX_RESOLUTION
         textureId = TxtLoaderUtil.getTxt(bitmap)
 
-//        GLES20.glUniform1f(texelHeightOffset, if (width == 0) 0f else BLUR_RATIO / height)
+        GLES20.glUniform1f(texelHeightOffset, BLUR_RATIO / /*bitmapWidth*/700f)
         GLES20.glUniform1f(
             texelWidthOffset,
-            BLUR_RATIO / bitmapWidth
+            BLUR_RATIO / /*bitmapWidth*/700f
         )
+        Log.d(TAG, "BLUR_RATIO / bitmapWidth ${BLUR_RATIO / bitmapWidth}")
     }
 
     fun onDrawBlurRect(endPointX: Float, endPointY: Float, postAction: () -> Unit): Boolean {
@@ -276,7 +277,7 @@ class BlurRectRenderer(private val context: Context) : GLSurfaceView.Renderer {
 //        textureCoords[7] = 0f
 
         textureCoords.forEach {
-            Log.d(TAG, "foreach $it ")
+            Log.d(TAG, "onTouch foreach $it ")
         }
 
         rectTxtCoordsList.add(textureCoords)
