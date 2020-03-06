@@ -5,7 +5,7 @@ varying vec2 v_texCoord;
 //uniform float uScale;// tile size
 //uniform vec2 uTexel;// texel size
 
-float filterSize = 90.0;
+float filterSize = 25.0;
 
 void main() {
     // float dx = uScale * uTexel.x;
