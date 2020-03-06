@@ -81,14 +81,13 @@ class BlurFrameBufferRenderer2(private val context: Context) : GLSurfaceView.Ren
         renderScene()
 
         // render FBO A to FBO B, using horizontal blur
-        val blurOffset = 0.002f//1.3846153846f//1.3846153846f//0.003155048076953f
-        renderHorizontalBlur(blurOffset)
+        renderHorizontalBlur()
 
         // render FBO B to scene, using vertical blur
-        renderVerticalBlur(blurOffset)
+        renderVerticalBlur()
     }
 
-    private fun renderVerticalBlur(blurOffset: Float) {
+    private fun renderVerticalBlur() {
         Matrix.setIdentityM(matrixView, 0)
 
         GLES20.glUseProgram(guassianProgram)
@@ -97,7 +96,7 @@ class BlurFrameBufferRenderer2(private val context: Context) : GLSurfaceView.Ren
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureFrameBuffers[1].textureId)
 
         GLES20.glUniform1f(texelHeightOffset, 0f)
-        GLES20.glUniform1f(texelWidthOffset, blurOffset)
+        GLES20.glUniform1f(texelWidthOffset, BLUR_OFFSET)
 
         GLES20.glUniformMatrix4fv(gaussianMvpHandle, 1, false, matrixView, 0)
         GLES20.glUniformMatrix4fv(gaussianTextureMvpHandle, 1, false, matrixView, 0)
@@ -132,7 +131,7 @@ class BlurFrameBufferRenderer2(private val context: Context) : GLSurfaceView.Ren
         GLES20.glDisableVertexAttribArray(gaussianTextureCoordsHandle)
     }
 
-    private fun renderHorizontalBlur(blurOffset: Float) {
+    private fun renderHorizontalBlur() {
         Matrix.setIdentityM(matrixView, 0)
 
         GLES20.glUseProgram(guassianProgram)
@@ -140,7 +139,7 @@ class BlurFrameBufferRenderer2(private val context: Context) : GLSurfaceView.Ren
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, textureFrameBuffers[1].frameBufferId)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureFrameBuffers[0].textureId)
 
-        GLES20.glUniform1f(texelHeightOffset, blurOffset)
+        GLES20.glUniform1f(texelHeightOffset, BLUR_OFFSET)
         GLES20.glUniform1f(texelWidthOffset, 0f)
 
         GLES20.glUniformMatrix4fv(gaussianMvpHandle, 1, false, matrixView, 0)
@@ -171,7 +170,7 @@ class BlurFrameBufferRenderer2(private val context: Context) : GLSurfaceView.Ren
             squareCoords.size / X_Y_COORDS_NUMBER
         )
 
-//        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
         GLES20.glDisableVertexAttribArray(gaussianPositionHandle)
         GLES20.glDisableVertexAttribArray(gaussianTextureCoordsHandle)
@@ -271,5 +270,6 @@ class BlurFrameBufferRenderer2(private val context: Context) : GLSurfaceView.Ren
         private const val TEXTURE_COORDS_VERTEX_NUMBER = 2
 
         private const val BLUR_RATIO = 1f
+        private const val BLUR_OFFSET = 0.002f//1.3846153846f//1.3846153846f//0.003155048076953f
     }
 }

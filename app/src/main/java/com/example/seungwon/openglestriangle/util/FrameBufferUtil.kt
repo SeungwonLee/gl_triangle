@@ -51,6 +51,7 @@ object FrameBufferUtil {
             0
         )
 
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
 
         when (glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER)) {

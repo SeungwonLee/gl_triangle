@@ -1,49 +1,33 @@
-package com.example.seungwon.openglestriangle.blur.rect
+package com.example.seungwon.openglestriangle.mosaic.rect
 
 import android.opengl.GLSurfaceView
 import android.os.Bundle
-import android.support.v4.content.ContextCompat
-import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import android.widget.ImageView
-import com.example.seungwon.openglestriangle.R
+import com.example.seungwon.openglestriangle.BaseActivity
 
-class BlurRectActivity : AppCompatActivity(), View.OnTouchListener {
-    private var glSurfaceView: GLSurfaceView? = null
-    private val renderer: BlurRectRenderer = BlurRectRenderer(this)
+class MosaicRectActivity : BaseActivity(), View.OnTouchListener {
+
+    private val renderer = MosaicRectRenderer(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_blur_rect)
-
-        glSurfaceView = findViewById(R.id.gl_surface)
         glSurfaceView?.let {
-            it.setEGLContextClientVersion(2)
-            it.setRenderer(renderer)
             // Draw only `requestRender()` called.
             it.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
             it.setOnTouchListener(this)
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        glSurfaceView?.onResume()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        glSurfaceView?.onPause()
-    }
+    override fun getRenderer(): GLSurfaceView.Renderer = MosaicRectRenderer(this)
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
         if (event == null) {
             return false
         }
 
-        Log.d("BlurRectActivity", "onTouch ${event.action} ${event.x} ${event.y}")
+        Log.d("MosaicRectActivity", "onTouch ${event.action} ${event.x} ${event.y}")
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {

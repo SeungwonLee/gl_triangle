@@ -10,6 +10,8 @@ import com.example.seungwon.openglestriangle.blur.rect.BlurRectActivity
 import com.example.seungwon.openglestriangle.filter.FilterActivity
 import com.example.seungwon.openglestriangle.filter.emboss.EmbossActivity
 import com.example.seungwon.openglestriangle.framebuffer.FrameBufferRendererActivity
+import com.example.seungwon.openglestriangle.mosaic.MosaicActivity
+import com.example.seungwon.openglestriangle.mosaic.rect.MosaicRectActivity
 import com.example.seungwon.openglestriangle.multiTxt.MultiTxtActivity
 import com.example.seungwon.openglestriangle.projection.ProjectionActivity
 import com.example.seungwon.openglestriangle.projection.translation.StripActivity
@@ -58,6 +60,12 @@ class StarterActivity : AppCompatActivity() {
         }
         findViewById<Button>(R.id.blur_rect_txt_opengl_btn).setOnClickListener {
             startActivity(Intent(this, BlurRectActivity::class.java))
+        }
+        findViewById<Button>(R.id.mosaic_txt_opengl_btn).setOnClickListener {
+            startActivity(Intent(this, MosaicActivity::class.java))
+        }
+        findViewById<Button>(R.id.mosaic_rect_txt_opengl_btn).setOnClickListener {
+            startActivity(Intent(this, MosaicRectActivity::class.java))
         }
     }
 }
