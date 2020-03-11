@@ -95,6 +95,7 @@ class MosaicRectRenderer(private val context: Context) : GLSurfaceView.Renderer 
         // render scene
         renderOriginalTexture()
 
+        // TODO Thread issue
         rectVertexCoordsList.forEachIndexed { index, floats ->
             rectVertexBuffer.clear()
             rectVertexBuffer.put(floats)

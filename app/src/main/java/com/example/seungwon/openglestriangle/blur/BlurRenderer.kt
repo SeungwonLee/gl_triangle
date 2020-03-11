@@ -6,6 +6,7 @@ import android.opengl.GLSurfaceView
 import android.opengl.Matrix
 import com.example.seungwon.openglestriangle.ProgramInfo
 import com.example.seungwon.openglestriangle.R
+import com.example.seungwon.openglestriangle.TextResourceReader
 import com.example.seungwon.openglestriangle.util.FrameBufferUtil
 import com.example.seungwon.openglestriangle.util.TxtLoaderUtil
 import java.nio.ByteBuffer
@@ -147,10 +148,17 @@ class BlurRenderer(private val context: Context) : GLSurfaceView.Renderer {
 //            R.raw.simple_txt_vertex_shader,
 //            R.raw.simple_txt_fragment_shader
 //        )
-        passThroughProgram = ProgramInfo.createProgram(
+        val vertexShaderStr = TextResourceReader.readTextFileFromAsset(
             context,
-            R.raw.blur_pass_through_vertex_shader,
-            R.raw.blur_pass_through_fragment_shader
+            "shaders/blur_pass_through_vertex_shader.glsl"
+        )
+        val fragmentShaderStr = TextResourceReader.readTextFileFromAsset(
+            context,
+            "shaders/blur_pass_through_fragment_shader.glsl"
+        )
+        passThroughProgram = ProgramInfo.createProgram(
+            vertexShaderStr,
+            fragmentShaderStr
         )
         GLES20.glUseProgram(passThroughProgram)
 

@@ -69,16 +69,21 @@ object ProgramInfo {
     fun createProgram(context: Context, vertexShaderId: Int, fragmentShaderId: Int): Int {
         val vertexCodeString =
             TextResourceReader.readTextFileFromResource(context, vertexShaderId)
+        val fragmentCodeString =
+            TextResourceReader.readTextFileFromResource(context, fragmentShaderId)
+
+        return createProgram(vertexCodeString, fragmentCodeString)
+    }
+
+    fun createProgram(vertexShaderStr: String, fragmentShaderStr: String): Int {
         val vertexShader = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER)
-        GLES20.glShaderSource(vertexShader, vertexCodeString)
+        val fragmentShader = GLES20.glCreateShader(GLES20.GL_FRAGMENT_SHADER)
+
+        GLES20.glShaderSource(vertexShader, vertexShaderStr)
         GLES20.glCompileShader(vertexShader)
 
         ShaderStatusInfo.getShaderStatus(vertexShader)
-
-        val fragmentCodeString =
-            TextResourceReader.readTextFileFromResource(context, fragmentShaderId)
-        val fragmentShader = GLES20.glCreateShader(GLES20.GL_FRAGMENT_SHADER)
-        GLES20.glShaderSource(fragmentShader, fragmentCodeString)
+        GLES20.glShaderSource(fragmentShader, fragmentShaderStr)
         GLES20.glCompileShader(fragmentShader)
 
         ShaderStatusInfo.getShaderStatus(fragmentShader)

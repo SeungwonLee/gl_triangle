@@ -15,12 +15,8 @@ import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
-import kotlin.math.abs
 
-/**
- * 테두리 생김
- */
-class BlurRectRenderer(private val context: Context) : GLSurfaceView.Renderer {
+class BlurRectRenderer2(private val context: Context) : GLSurfaceView.Renderer {
     private val squareCoords: FloatArray = floatArrayOf(
         // X, Y
         -1f, -1f,
@@ -60,13 +56,6 @@ class BlurRectRenderer(private val context: Context) : GLSurfaceView.Renderer {
     private var originalTextureCoordsHandle: Int = 0
     private var originalMvpHandle: Int = 0
 
-    private var mosaicProgram: Int = 0
-
-    private var mosaicPositionHandle: Int = 0
-    private var mosaicMvpHandle: Int = 0
-    private var mosaicTextureHandle: Int = 0
-    private var mosaicTextureCoordsHandle: Int = 0
-
     private var texelWidthOffset: Int = 0
     private var texelHeightOffset: Int = 0
 
@@ -75,6 +64,7 @@ class BlurRectRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
     @Volatile
     var rectStartPointX: Float = 0f
+
     @Volatile
     var rectStartPointY: Float = 0f
 
@@ -104,8 +94,9 @@ class BlurRectRenderer(private val context: Context) : GLSurfaceView.Renderer {
             .asFloatBuffer()
     }
 
+    var loopCount = 3
     override fun onDrawFrame(gl: GL10?) {
-        GLES20.glClearColor(0f, 0f, 0f, 1f)
+        GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
 
         renderOriginalTexture()
@@ -119,17 +110,29 @@ class BlurRectRenderer(private val context: Context) : GLSurfaceView.Renderer {
             rectTxtBuffer.put(rectTxtCoordsList[index])
             rectTxtBuffer.position(0)
 
-//            renderMosaicRect(rectVertexBuffer, rectTxtBuffer)
             // render scene to FBO A
-            renderScene(rectVertexBuffer, rectTxtBuffer)
+            renderScene(
+                vertexBuffer,
+                txtBuffer,
+                textureFrameBufferA?.frameBufferId ?: 0,
+                originalTextureId
+            )
 
-            // render FBO A to FBO B, using horizontal blur
-            renderHorizontalBlur(rectVertexBuffer, rectTxtBuffer)
+            for (i in 0 until loopCount) {
+                // render FBO A to FBO B, using horizontal blur
+                renderHorizontalBlur(vertexBuffer, txtBuffer)
 
-            // render FBO B to scene, using vertical blur
-            renderVerticalBlur(rectVertexBuffer, rectTxtBuffer)
+//                 render FBO B to scene, using vertical blur
+                renderVerticalBlur(rectVertexBuffer, rectTxtBuffer)
+            }
+//            renderScene(
+//                rectVertexBuffer,
+//                rectTxtBuffer,
+//                0,
+//                textureFrameBufferA?.textureId ?: 0
+//            )
 
-//            renderBlurredTexture(rectVertexBuffer, rectTxtBuffer)
+//            renderTextureOnMainFrame(rectVertexBuffer, rectTxtBuffer)
         }
     }
 
@@ -160,6 +163,7 @@ class BlurRectRenderer(private val context: Context) : GLSurfaceView.Renderer {
     }
 
     private fun renderVerticalBlur(vertexBuffer: FloatBuffer, textureBuffer: FloatBuffer) {
+//        val textureFrameBufferA = textureFrameBufferA ?: error("textureFrameBufferA null")
         val textureFrameBufferB = textureFrameBufferB ?: error("textureFrameBufferB null")
         Matrix.setIdentityM(matrixView, 0)
 
@@ -199,6 +203,7 @@ class BlurRectRenderer(private val context: Context) : GLSurfaceView.Renderer {
             squareCoords.size / X_Y_COORDS_NUMBER
         )
 
+//        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
         GLES20.glDisableVertexAttribArray(positionHandle)
         GLES20.glDisableVertexAttribArray(textureCoordsHandle)
@@ -209,8 +214,8 @@ class BlurRectRenderer(private val context: Context) : GLSurfaceView.Renderer {
         val textureFrameBufferB = textureFrameBufferB ?: error("textureFrameBufferB null")
         Matrix.setIdentityM(matrixView, 0)
 
-        GLES20.glUseProgram(gaussianBlurProgram)
 
+        GLES20.glUseProgram(gaussianBlurProgram)
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, textureFrameBufferB.frameBufferId)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureFrameBufferA.textureId)
 
@@ -251,15 +256,64 @@ class BlurRectRenderer(private val context: Context) : GLSurfaceView.Renderer {
         GLES20.glDisableVertexAttribArray(textureCoordsHandle)
     }
 
-    private fun renderScene(vertexBuffer: FloatBuffer, textureBuffer: FloatBuffer) {
-        val textureFrameBufferA = textureFrameBufferA ?: error("textureFrameBufferA null")
+    private fun renderTextureOnMainFrame(vertexBuffer: FloatBuffer, textureBuffer: FloatBuffer) {
+        val textureFrameBufferB = textureFrameBufferB ?: error("textureFrameBufferB null")
+        Matrix.setIdentityM(matrixView, 0)
+
+        GLES20.glUseProgram(gaussianBlurProgram)
+
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureFrameBufferB.textureId)
+
+//        GLES20.glUniform1f(texelHeightOffset, BLUR_OFFSET)
+//        GLES20.glUniform1f(texelWidthOffset, 0f)
+
+        GLES20.glUniformMatrix4fv(mvpHandle, 1, false, matrixView, 0)
+        GLES20.glUniformMatrix4fv(textureMvpHandle, 1, false, matrixView, 0)
+
+        GLES20.glEnableVertexAttribArray(positionHandle)
+        GLES20.glVertexAttribPointer(
+            positionHandle,
+            X_Y_COORDS_NUMBER,
+            GLES20.GL_FLOAT,
+            false,
+            0,
+            vertexBuffer
+        )
+        GLES20.glEnableVertexAttribArray(textureCoordsHandle)
+        GLES20.glVertexAttribPointer(
+            textureCoordsHandle,
+            TEXTURE_COORDS_VERTEX_NUMBER,
+            GLES20.GL_FLOAT,
+            false,
+            0,
+            textureBuffer
+        )
+
+        GLES20.glDrawArrays(
+            GLES20.GL_TRIANGLE_FAN,
+            0,
+            squareCoords.size / X_Y_COORDS_NUMBER
+        )
+
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
+        GLES20.glDisableVertexAttribArray(positionHandle)
+        GLES20.glDisableVertexAttribArray(textureCoordsHandle)
+    }
+
+    private fun renderScene(
+        vertexBuffer: FloatBuffer,
+        textureBuffer: FloatBuffer,
+        frameBufferId: Int,
+        textureId: Int
+    ) {
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBufferId)
 
         Matrix.setIdentityM(matrixView, 0)
 
         GLES20.glUseProgram(originalRenderingProgram)
 
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, textureFrameBufferA.frameBufferId)
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, originalTextureId)
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
 
         GLES20.glUniformMatrix4fv(originalMvpHandle, 1, false, matrixView, 0)
 
@@ -282,7 +336,9 @@ class BlurRectRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4)
 
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
+        if (frameBufferId != 0) {
+            GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
+        }
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
         GLES20.glDisableVertexAttribArray(originalPositionHandle)
         GLES20.glDisableVertexAttribArray(originalTextureCoordsHandle)
@@ -336,12 +392,12 @@ class BlurRectRenderer(private val context: Context) : GLSurfaceView.Renderer {
         this.height = height
 
         textureFrameBufferA = FrameBufferUtil.createFrameTextureBuffer(
-            abs(width).toInt(),
-            abs(height).toInt()
+            width,
+            height
         )
         textureFrameBufferB = FrameBufferUtil.createFrameTextureBuffer(
-            abs(width).toInt(),
-            abs(height).toInt()
+            width,
+            height
         )
     }
 
@@ -392,19 +448,6 @@ class BlurRectRenderer(private val context: Context) : GLSurfaceView.Renderer {
         texelHeightOffset =
             GLES20.glGetUniformLocation(gaussianBlurProgram, "uTexelHeightOffset")
 
-
-        // load mosaic shaders
-        mosaicProgram = ProgramInfo.createProgram(
-            context,
-            R.raw.mosaic_vertex_shader,
-            R.raw.mosaic_fragment_shader
-        )
-
-        GLES20.glUseProgram(mosaicProgram)
-        mosaicPositionHandle = GLES20.glGetAttribLocation(mosaicProgram, "vPosition")
-        mosaicTextureCoordsHandle = GLES20.glGetAttribLocation(mosaicProgram, "a_texCoord")
-        mosaicTextureHandle = GLES20.glGetUniformLocation(mosaicProgram, "uTexture")
-        mosaicMvpHandle = GLES20.glGetUniformLocation(mosaicProgram, "uMVPMatrix")
 
 //        GLES20.glUniform1f(texelHeightOffset, BLUR_RATIO / /*bitmapWidth*/700f)
 //        GLES20.glUniform1f(
@@ -563,41 +606,6 @@ class BlurRectRenderer(private val context: Context) : GLSurfaceView.Renderer {
         return vertextCoords
     }
 
-    private fun renderMosaicRect(vertexBuffer: FloatBuffer, textureBuffer: FloatBuffer) {
-        Matrix.setIdentityM(matrixView, 0)
-
-        GLES20.glUseProgram(mosaicProgram)
-
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, originalTextureId)
-
-        GLES20.glUniformMatrix4fv(mosaicMvpHandle, 1, false, matrixView, 0)
-
-        GLES20.glEnableVertexAttribArray(mosaicPositionHandle)
-        GLES20.glVertexAttribPointer(
-            mosaicPositionHandle,
-            X_Y_COORDS_NUMBER, GLES20.GL_FLOAT, false,
-            0,
-            vertexBuffer
-        )
-        GLES20.glEnableVertexAttribArray(mosaicTextureCoordsHandle)
-        GLES20.glVertexAttribPointer(
-            mosaicTextureCoordsHandle,
-            TEXTURE_COORDS_VERTEX_NUMBER,
-            GLES20.GL_FLOAT,
-            false,
-            0,
-            textureBuffer
-        )
-
-        context.resources.assets.open("")
-
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4)
-
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
-        GLES20.glDisableVertexAttribArray(mosaicPositionHandle)
-        GLES20.glDisableVertexAttribArray(mosaicTextureCoordsHandle)
-    }
-
     private fun getNomalizedGlCoordsX(x: Float, screenWidth: Int): Float =
         x / screenWidth * 2.0f - 1.0f
 
@@ -616,7 +624,7 @@ class BlurRectRenderer(private val context: Context) : GLSurfaceView.Renderer {
         private const val TEXTURE_RESOLUTION = 0.5f
 
         private const val BLUR_RATIO = 1f
-        private const val BLUR_OFFSET = 0.003f
+        private const val BLUR_OFFSET = 0.003f//0.00001f
         //0.003f//0.002f//1.3846153846f//1.3846153846f//0.003155048076953f
     }
 }

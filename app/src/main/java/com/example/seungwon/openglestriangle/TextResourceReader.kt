@@ -11,12 +11,14 @@ object TextResourceReader {
      * Reads in text from a resource file and returns a String containing the
      * text.
      */
-    fun readTextFileFromResource(context: Context,
-                                 resourceId: Int): String {
+    fun readTextFileFromResource(
+        context: Context,
+        resourceId: Int
+    ): String {
         val body = StringBuilder()
 
         try {
-            val inputStream = context.getResources().openRawResource(resourceId)
+            val inputStream = context.resources.openRawResource(resourceId)
             val inputStreamReader = InputStreamReader(inputStream)
             val bufferedReader = BufferedReader(inputStreamReader)
 
@@ -29,9 +31,36 @@ object TextResourceReader {
             }
         } catch (e: IOException) {
             throw RuntimeException(
-                    "Could not open resource: $resourceId", e)
+                "Could not open resource: $resourceId", e
+            )
         } catch (nfe: Resources.NotFoundException) {
             throw RuntimeException("Resource not found: $resourceId", nfe)
+        }
+
+        return body.toString()
+    }
+
+    fun readTextFileFromAsset(context: Context, fileName: String): String {
+        val body = StringBuilder()
+
+        try {
+            val inputStream = context.assets.open(fileName)
+            val inputStreamReader = InputStreamReader(inputStream)
+            val bufferedReader = BufferedReader(inputStreamReader)
+
+            var nextLine: String? = bufferedReader.readLine()
+
+            while (nextLine != null) {
+                body.append(nextLine)
+                body.append('\n')
+                nextLine = bufferedReader.readLine()
+            }
+        } catch (e: IOException) {
+            throw RuntimeException(
+                "Could not open resource: $fileName", e
+            )
+        } catch (nfe: Resources.NotFoundException) {
+            throw RuntimeException("Resource not found: $fileName", nfe)
         }
 
         return body.toString()

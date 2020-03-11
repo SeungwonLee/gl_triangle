@@ -77,7 +77,7 @@ class SquareRenderer(private val context: Context) : GLSurfaceView.Renderer {
     }
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
+        GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f)
 
         val vertextCodeString = TextResourceReader.readTextFileFromResource(context, R.raw.simple_vertex_shader)
         val vertexShader = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER)
