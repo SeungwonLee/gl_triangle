@@ -32,8 +32,17 @@ class BlurRectRenderer2(private val context: Context) : GLSurfaceView.Renderer {
         0f, 0f
     )
 
+    private val txtCoordsYFlip: FloatArray = floatArrayOf(
+        // U, V
+        0f, 0f,
+        1f, 0f,
+        1f, 1f,
+        0f, 1f
+    )
+
     private val vertexBuffer: FloatBuffer
     private val txtBuffer: FloatBuffer
+    private val txtBufferYFlip: FloatBuffer
     private val rectVertexCoordsList: ArrayList<FloatArray> = ArrayList()
     private val rectTxtCoordsList: ArrayList<FloatArray> = ArrayList()
     private val rectVertexBuffer: FloatBuffer
@@ -62,14 +71,18 @@ class BlurRectRenderer2(private val context: Context) : GLSurfaceView.Renderer {
     private var width: Int = 0
     private var height: Int = 0
 
+    private var textureFrameBufferA: FrameBufferUtil.TextureFrameBuffer? = null
+    private var textureFrameBufferB: FrameBufferUtil.TextureFrameBuffer? = null
+
+    var blurOffset: Float = 0f
+    var loopCount = 1
+
     @Volatile
     var rectStartPointX: Float = 0f
 
     @Volatile
     var rectStartPointY: Float = 0f
 
-    private var textureFrameBufferA: FrameBufferUtil.TextureFrameBuffer? = null
-    private var textureFrameBufferB: FrameBufferUtil.TextureFrameBuffer? = null
 
     init {
         vertexBuffer =
@@ -85,6 +98,12 @@ class BlurRectRenderer2(private val context: Context) : GLSurfaceView.Renderer {
             .put(txtCoords)
         txtBuffer.position(0)
 
+        txtBufferYFlip = ByteBuffer.allocateDirect(txtCoordsYFlip.size * FLOAT_BYTE_SIZE)
+            .order(ByteOrder.nativeOrder())
+            .asFloatBuffer()
+            .put(txtCoordsYFlip)
+        txtBufferYFlip.position(0)
+
         rectVertexBuffer = ByteBuffer.allocateDirect(txtCoords.size * FLOAT_BYTE_SIZE)
             .order(ByteOrder.nativeOrder())
             .asFloatBuffer()
@@ -94,7 +113,6 @@ class BlurRectRenderer2(private val context: Context) : GLSurfaceView.Renderer {
             .asFloatBuffer()
     }
 
-    var loopCount = 3
     override fun onDrawFrame(gl: GL10?) {
         GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
@@ -113,26 +131,25 @@ class BlurRectRenderer2(private val context: Context) : GLSurfaceView.Renderer {
             // render scene to FBO A
             renderScene(
                 vertexBuffer,
-                txtBuffer,
+                txtBufferYFlip,
                 textureFrameBufferA?.frameBufferId ?: 0,
                 originalTextureId
             )
 
             for (i in 0 until loopCount) {
                 // render FBO A to FBO B, using horizontal blur
-                renderHorizontalBlur(vertexBuffer, txtBuffer)
+                renderHorizontalBlur(vertexBuffer, txtBufferYFlip)
 
-//                 render FBO B to scene, using vertical blur
-                renderVerticalBlur(rectVertexBuffer, rectTxtBuffer)
+                // render FBO B to scene, using vertical blur
+                renderVerticalBlur(vertexBuffer, txtBufferYFlip)
             }
-//            renderScene(
-//                rectVertexBuffer,
-//                rectTxtBuffer,
-//                0,
-//                textureFrameBufferA?.textureId ?: 0
-//            )
 
-//            renderTextureOnMainFrame(rectVertexBuffer, rectTxtBuffer)
+            renderScene(
+                rectVertexBuffer,
+                rectTxtBuffer,
+                0,
+                textureFrameBufferA?.textureId ?: 0
+            )
         }
     }
 
@@ -163,17 +180,17 @@ class BlurRectRenderer2(private val context: Context) : GLSurfaceView.Renderer {
     }
 
     private fun renderVerticalBlur(vertexBuffer: FloatBuffer, textureBuffer: FloatBuffer) {
-//        val textureFrameBufferA = textureFrameBufferA ?: error("textureFrameBufferA null")
+        val textureFrameBufferA = textureFrameBufferA ?: error("textureFrameBufferA null")
         val textureFrameBufferB = textureFrameBufferB ?: error("textureFrameBufferB null")
         Matrix.setIdentityM(matrixView, 0)
 
         GLES20.glUseProgram(gaussianBlurProgram)
 
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, textureFrameBufferA.frameBufferId)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureFrameBufferB.textureId)
 
         GLES20.glUniform1f(texelHeightOffset, 0f)
-        GLES20.glUniform1f(texelWidthOffset, BLUR_OFFSET)
+        GLES20.glUniform1f(texelWidthOffset, blurOffset / (width / WIDTH_DIVIDER))
 
         GLES20.glUniformMatrix4fv(mvpHandle, 1, false, matrixView, 0)
         GLES20.glUniformMatrix4fv(textureMvpHandle, 1, false, matrixView, 0)
@@ -214,12 +231,11 @@ class BlurRectRenderer2(private val context: Context) : GLSurfaceView.Renderer {
         val textureFrameBufferB = textureFrameBufferB ?: error("textureFrameBufferB null")
         Matrix.setIdentityM(matrixView, 0)
 
-
         GLES20.glUseProgram(gaussianBlurProgram)
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, textureFrameBufferB.frameBufferId)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureFrameBufferA.textureId)
 
-        GLES20.glUniform1f(texelHeightOffset, BLUR_OFFSET)
+        GLES20.glUniform1f(texelHeightOffset, blurOffset / (height / WIDTH_DIVIDER))
         GLES20.glUniform1f(texelWidthOffset, 0f)
 
         GLES20.glUniformMatrix4fv(mvpHandle, 1, false, matrixView, 0)
@@ -391,6 +407,7 @@ class BlurRectRenderer2(private val context: Context) : GLSurfaceView.Renderer {
         this.width = width
         this.height = height
 
+        Log.d(TAG, "onSurfaceChanged $width $height")
         textureFrameBufferA = FrameBufferUtil.createFrameTextureBuffer(
             width,
             height
@@ -493,16 +510,16 @@ class BlurRectRenderer2(private val context: Context) : GLSurfaceView.Renderer {
         endPointY: Float
     ): FloatArray {
 
-        val rectLengthPixelX = (endPointX - rectStartPointX)
-        val rectLengthPixelY = (endPointY - rectStartPointY)
+//        val rectLengthPixelX = (endPointX - rectStartPointX)
+//        val rectLengthPixelY = (endPointY - rectStartPointY)
 
         Log.d(TAG, "onTouch rectStartPointX $rectStartPointX rectStartPointY $rectStartPointY")
-        Log.d(TAG, "onTouch rectLengthPixelX $rectLengthPixelX rectLengthPixelY $rectLengthPixelY")
+//        Log.d(TAG, "onTouch rectLengthPixelX $rectLengthPixelX rectLengthPixelY $rectLengthPixelY")
 
         val texturePointX = rectStartPointX / width
         val texturePointY = rectStartPointY / height
-        var rectangleTextureX = texturePointX + (rectLengthPixelX / width)
-        var rectangleTextureY = texturePointY + (rectLengthPixelY / height)
+        var rectangleTextureX = endPointX / width//texturePointX + (rectLengthPixelX / width)
+        var rectangleTextureY = endPointY / height//texturePointY + (rectLengthPixelY / height)
         val textureCoords = FloatArray(8)
 
 //        0f, 1f,
@@ -574,7 +591,7 @@ class BlurRectRenderer2(private val context: Context) : GLSurfaceView.Renderer {
             rectY = -1f
         }
 
-        Log.d(TAG, "onTouch rectX $rectX rectY $rectY")
+//        Log.d(TAG, "onTouch rectX $rectX rectY $rectY")
 
 //        private val squareCoords: FloatArray = floatArrayOf(
 //            // X, Y
@@ -625,6 +642,7 @@ class BlurRectRenderer2(private val context: Context) : GLSurfaceView.Renderer {
 
         private const val BLUR_RATIO = 1f
         private const val BLUR_OFFSET = 0.003f//0.00001f
+        private const val WIDTH_DIVIDER = 3f
         //0.003f//0.002f//1.3846153846f//1.3846153846f//0.003155048076953f
     }
 }
