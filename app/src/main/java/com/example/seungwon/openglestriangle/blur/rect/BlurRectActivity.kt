@@ -9,7 +9,6 @@ import android.view.View
 import android.widget.SeekBar
 import android.widget.TextView
 import com.example.seungwon.openglestriangle.R
-import kotlin.math.ceil
 
 class BlurRectActivity : AppCompatActivity(), View.OnTouchListener {
     private var glSurfaceView: GLSurfaceView? = null
@@ -96,6 +95,11 @@ class BlurRectActivity : AppCompatActivity(), View.OnTouchListener {
             MotionEvent.ACTION_DOWN -> {
                 renderer.rectStartPointX = event.x
                 renderer.rectStartPointY = event.y
+//                Log.d(TAG, "ontouch matrix ${event.x} ${event.y}")
+//                val matrix2 = android.graphics.Matrix()
+//                matrix2.setScale(1440 / 1000f, 1f)
+//                event.transform(matrix2)
+//                Log.d(TAG, "ontouch matrix2 ${event.x} ${event.y}")
                 return true
             }
             MotionEvent.ACTION_MOVE -> {
@@ -112,5 +116,9 @@ class BlurRectActivity : AppCompatActivity(), View.OnTouchListener {
             }
         }
         return false
+    }
+
+    companion object {
+        private const val TAG = "BlurRectActivity"
     }
 }

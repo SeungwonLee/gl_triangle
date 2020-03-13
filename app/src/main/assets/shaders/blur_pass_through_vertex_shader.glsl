@@ -2,6 +2,7 @@
 
 uniform mat4 uMVPMatrix;// MVP의 변형 매트릭스 (전체 변형)
 uniform mat4 uTexMatrix;// 텍스처 변형 매트릭스 (텍스처 변형 만 해당)
+uniform mat4 uProjectionMatrix;
 
 uniform float uTexelWidthOffset;
 uniform float uTexelHeightOffset;
@@ -14,12 +15,13 @@ varying vec2 vBlurTextureCoord[SAMPLES];
 
 
 void main() {
-    gl_Position = uMVPMatrix * aPosition;
+    vec4 temp_v = uMVPMatrix * aPosition;
+    gl_Position = temp_v;
     vTextureCoord = (uTexMatrix * aTextureCoord).xy;
 
     int multiplier = 0;
     vec2 blurStep;
-    vec2 offset = vec2(uTexelHeightOffset, uTexelWidthOffset); // horizontal, vertical
+    vec2 offset = vec2(uTexelHeightOffset, uTexelWidthOffset);// horizontal, vertical
 
     for (int i = 0; i < SAMPLES; i++)
     {
