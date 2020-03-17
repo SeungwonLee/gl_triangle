@@ -26,6 +26,7 @@ class BlurRectActivity : AppCompatActivity(), View.OnTouchListener {
             it.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
             it.setOnTouchListener(this)
         }
+
         val blurOffsetSeekBar = findViewById<SeekBar>(R.id.blur_offset_seekbar)
         val blurOffsetSeekBarTextView = findViewById<TextView>(R.id.blur_offset_seekbar_text)
         blurOffsetSeekBar.setOnSeekBarChangeListener(object :
@@ -95,11 +96,6 @@ class BlurRectActivity : AppCompatActivity(), View.OnTouchListener {
             MotionEvent.ACTION_DOWN -> {
                 renderer.rectStartPointX = event.x
                 renderer.rectStartPointY = event.y
-//                Log.d(TAG, "ontouch matrix ${event.x} ${event.y}")
-//                val matrix2 = android.graphics.Matrix()
-//                matrix2.setScale(1440 / 1000f, 1f)
-//                event.transform(matrix2)
-//                Log.d(TAG, "ontouch matrix2 ${event.x} ${event.y}")
                 return true
             }
             MotionEvent.ACTION_MOVE -> {
