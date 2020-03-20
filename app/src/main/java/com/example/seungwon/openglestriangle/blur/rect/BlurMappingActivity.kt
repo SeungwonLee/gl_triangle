@@ -1,5 +1,6 @@
 package com.example.seungwon.openglestriangle.blur.rect
 
+import android.graphics.Bitmap
 import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -10,6 +11,8 @@ import android.widget.Button
 import android.widget.SeekBar
 import android.widget.TextView
 import com.example.seungwon.openglestriangle.R
+import com.example.seungwon.openglestriangle.util.renderToBitmap
+import com.example.seungwon.openglestriangle.util.saveToFile
 
 class BlurMappingActivity : AppCompatActivity(), View.OnTouchListener {
     private var glSurfaceView: GLSurfaceView? = null
@@ -35,6 +38,20 @@ class BlurMappingActivity : AppCompatActivity(), View.OnTouchListener {
             renderRectWidth = it.width()
             renderRectHeight = it.height()
         }
+
+        val saveBtn = findViewById<Button>(R.id.blur_save)
+        saveBtn.setOnClickListener {
+            val filePath = "${externalCacheDir.absolutePath}/${System.currentTimeMillis()}.jpg"
+            val bitmap =
+                Bitmap.createBitmap(renderRectWidth, renderRectHeight, Bitmap.Config.ARGB_8888)
+            glSurfaceView?.queueEvent {
+                bitmap.renderToBitmap(renderRectWidth, renderRectHeight)
+                bitmap.saveToFile(filePath)
+                bitmap.recycle()
+            }
+            Log.d(TAG, "SAVE $filePath")
+        }
+
         initSeekBar()
         initBlurAlgorithmBtn()
     }
@@ -56,9 +73,10 @@ class BlurMappingActivity : AppCompatActivity(), View.OnTouchListener {
     }
 
     private fun getBlurTypeStr(blurType: BlurType): String = when (blurType) {
-        BlurType.Gaussian -> "Gaussian Blur"
         BlurType.Box -> "Box Blur"
         BlurType.StackBlur -> "Stack Blur"
+        BlurType.Gaussian -> "Gaussian Blur"
+        else -> "Gaussian Blur"
     }
 
     private fun updateBlurAlgorithm(blurType: BlurType) {

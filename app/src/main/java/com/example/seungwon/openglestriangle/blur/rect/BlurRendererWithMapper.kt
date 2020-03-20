@@ -84,6 +84,7 @@ class BlurRendererWithMapper(private val context: Context) : GLSurfaceView.Rende
 
     private var texelWidthOffset: Int = 0
     private var texelHeightOffset: Int = 0
+    private var isVerticalHandle: Int = 0
 
     private var width: Int = 0
     private var height: Int = 0
@@ -237,7 +238,8 @@ class BlurRendererWithMapper(private val context: Context) : GLSurfaceView.Rende
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureFrameBufferB.textureId)
 
         GLES20.glUniform1f(texelHeightOffset, 0f)
-        GLES20.glUniform1f(texelWidthOffset, blurOffset / (width / WIDTH_DIVIDER))
+        GLES20.glUniform1f(texelWidthOffset, blurOffset / (width / 3f))
+        GLES20.glUniform1f(isVerticalHandle, 1f)
 
         GLES20.glUniformMatrix4fv(mvpHandle, 1, false, identityMatrixView, 0)
         GLES20.glUniformMatrix4fv(textureMvpHandle, 1, false, identityMatrixView, 0)
@@ -283,8 +285,9 @@ class BlurRendererWithMapper(private val context: Context) : GLSurfaceView.Rende
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, textureFrameBufferB.frameBufferId)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureFrameBufferA.textureId)
 
-        GLES20.glUniform1f(texelHeightOffset, blurOffset / (height / WIDTH_DIVIDER))
+        GLES20.glUniform1f(texelHeightOffset, blurOffset / (height / 3f))
         GLES20.glUniform1f(texelWidthOffset, 0f)
+        GLES20.glUniform1f(isVerticalHandle, 0f)
 
         GLES20.glUniformMatrix4fv(mvpHandle, 1, false, identityMatrixView, 0)
         GLES20.glUniformMatrix4fv(textureMvpHandle, 1, false, identityMatrixView, 0)
@@ -490,11 +493,13 @@ class BlurRendererWithMapper(private val context: Context) : GLSurfaceView.Rende
         val vertexShader = when (blurType) {
             BlurType.StackBlur, BlurType.Box -> "shaders/stack_blur_hoko.vert"
             BlurType.Gaussian -> "shaders/blur_pass_through_vertex_shader.glsl"
+            BlurType.Gaussian_2 -> "shaders/blur_pass_through_vertex_shader.glsl"
         }
         val fragmentShader = when (blurType) {
             BlurType.Box -> "shaders/box_blur.frag"
             BlurType.StackBlur -> "shaders/stack_blur_hoko.frag"
             BlurType.Gaussian -> "shaders/blur_pass_through_fragment_shader.glsl"
+            BlurType.Gaussian_2 -> "shaders/gaussian_vertical.frag"
         }
         val vertexShaderStr = TextResourceReader.readTextFileFromAsset(
             context,
@@ -518,13 +523,14 @@ class BlurRendererWithMapper(private val context: Context) : GLSurfaceView.Rende
 
         mvpHandle = GLES20.glGetUniformLocation(gaussianBlurProgram, "uMVPMatrix")
         textureMvpHandle = GLES20.glGetUniformLocation(gaussianBlurProgram, "uTexMatrix")
-//        blurProjectionMatrixHandle =
-//            GLES20.glGetUniformLocation(gaussianBlurProgram, "uProjectionMatrix")
+        blurProjectionMatrixHandle =
+            GLES20.glGetUniformLocation(gaussianBlurProgram, "uProjectionMatrix")
 
         texelWidthOffset = GLES20.glGetUniformLocation(gaussianBlurProgram, "uTexelWidthOffset")
         texelHeightOffset =
             GLES20.glGetUniformLocation(gaussianBlurProgram, "uTexelHeightOffset")
 
+        isVerticalHandle = GLES20.glGetUniformLocation(gaussianBlurProgram, "isVertical")
 
         if (blurType == BlurType.StackBlur || blurType == BlurType.Box) {
             val blurSizeHandle = GLES20.glGetUniformLocation(gaussianBlurProgram, "uBlurSize")
@@ -665,14 +671,6 @@ class BlurRendererWithMapper(private val context: Context) : GLSurfaceView.Rende
 //            -1f, 1f
 //        )
 
-//        vertextCoords[0] = -1f
-//        vertextCoords[1] = -1f
-//        vertextCoords[2] = 1f
-//        vertextCoords[3] = -1f
-//        vertextCoords[4] = 1f
-//        vertextCoords[5] = 1f
-//        vertextCoords[6] = -1f
-//        vertextCoords[7] = 1f
 
         val vertextCoords = FloatArray(8)
         vertextCoords[0] = startPointX
@@ -683,6 +681,15 @@ class BlurRendererWithMapper(private val context: Context) : GLSurfaceView.Rende
         vertextCoords[5] = startPointY
         vertextCoords[6] = startPointX
         vertextCoords[7] = startPointY
+
+//        vertextCoords[0] = -1f
+//        vertextCoords[1] = -1f
+//        vertextCoords[2] = 1f
+//        vertextCoords[3] = -1f
+//        vertextCoords[4] = 1f
+//        vertextCoords[5] = 1f
+//        vertextCoords[6] = -1f
+//        vertextCoords[7] = 1f
 
         for (i in vertextCoords.indices) {
             vertextCoords[i] = vertextCoords[i] * 0.5f
@@ -709,7 +716,7 @@ class BlurRendererWithMapper(private val context: Context) : GLSurfaceView.Rende
         private const val TEXTURE_RESOLUTION = 0.5f
 
         private const val BLUR_RATIO = 2
-        private const val BLUR_OFFSET = 0.003f//0.00001f
+        private const val BLUR_OFFSET = 1.3846153846f//0.004f//0.003f//0.00001f
         private const val WIDTH_DIVIDER = 3f
         //0.003f//0.002f//1.3846153846f//1.3846153846f//0.003155048076953f'
 

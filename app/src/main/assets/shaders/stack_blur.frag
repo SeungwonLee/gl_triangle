@@ -1,4 +1,4 @@
-precision highp float;// 演算精度を指定します。
+precision highp float;
 
 uniform lowp sampler2D uTexture;
 

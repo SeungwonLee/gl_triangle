@@ -16,7 +16,7 @@ varying vec2 vBlurTextureCoord[SAMPLES];
 
 void main() {
     vec4 temp_v = uMVPMatrix * aPosition;
-    gl_Position = temp_v;
+    gl_Position = uProjectionMatrix * temp_v;
     vTextureCoord = (uTexMatrix * aTextureCoord).xy;
 
     int multiplier = 0;

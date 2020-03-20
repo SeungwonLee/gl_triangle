@@ -2,8 +2,6 @@ package com.example.seungwon.openglestriangle
 
 import org.junit.Test
 
-import org.junit.Assert.*
-
 /**
  * Example local unit test, which will execute on the development machine (host).
  *
@@ -12,6 +10,94 @@ import org.junit.Assert.*
 class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+        val sampler = 9
+        var offset = 1 / 1440f
+        println("Blur test offset ${String.format("%.9f", offset)}")
+        for (i in 0 until sampler) {
+            val multipler = (i - (sampler - 1) / 2f)
+            val blurStep = multipler * offset
+            val coords = 0.0 + blurStep
+
+            println(
+                "Blur test i=$i m=$multipler " +
+                        "b=${String.format("%.9f", blurStep)} " +
+                        "c=${String.format("%.9f", coords)}"
+            )
+        }
+
+        println("")
+        offset = 1 / 1440f / 300
+        println("Blur test offset ${String.format("%.9f", offset)}")
+        for (i in 0 until sampler) {
+            val multipler = (i - (sampler - 1) / 2f)
+            val blurStep = multipler * offset
+            val coords = 0.0 + blurStep
+
+            println(
+                "Blur test i=$i m=$multipler " +
+                        "b=${String.format("%.9f", blurStep)} " +
+                        "c=${String.format("%.9f", coords)}"
+            )
+        }
+
+        println("")
+        offset = 0.003f
+        println("Blur test offset ${String.format("%.9f", offset)}")
+        for (i in 0 until sampler) {
+            val multipler = (i - (sampler - 1) / 2f)
+            val blurStep = multipler * offset
+            val coords = 0.0 + blurStep
+
+            println(
+                "Blur test i=$i m=$multipler " +
+                        "b=${String.format("%.9f", blurStep)} " +
+                        "c=${String.format("%.9f", coords)}"
+            )
+        }
+
+        println("")
+        offset = 0.001f
+        println("Blur test offset ${String.format("%.9f", offset)}")
+        for (i in 0 until sampler) {
+            val multipler = (i - (sampler - 1) / 2f)
+            val blurStep = multipler * offset
+            val coords = 0.0 + blurStep
+
+            println(
+                "Blur test i=$i m=$multipler " +
+                        "b=${String.format("%.9f", blurStep)} " +
+                        "c=${String.format("%.9f", coords)}"
+            )
+        }
+
+        println("")
+        offset = 0.002f
+        println("Blur test offset ${String.format("%.9f", offset)}")
+        for (i in 0 until sampler) {
+            val multipler = (i - (sampler - 1) / 2f)
+            val blurStep = multipler * offset
+            val coords = 0.0 + blurStep
+
+            println(
+                "Blur test i=$i m=$multipler " +
+                        "b=${String.format("%.9f", blurStep)} " +
+                        "c=${String.format("%.9f", coords)}"
+            )
+        }
+
+        println("")
+        offset = 0.004f
+        println("Blur test offset ${String.format("%.9f", offset)}")
+        for (i in 0 until sampler) {
+            val multipler = (i - (sampler - 1) / 2f)
+            val blurStep = multipler * offset
+            val coords = 0.0 + blurStep
+
+            println(
+                "Blur test i=$i m=$multipler " +
+                        "b=${String.format("%.9f", blurStep)} " +
+                        "c=${String.format("%.9f", coords)}"
+            )
+        }
     }
 }
