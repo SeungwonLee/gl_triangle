@@ -21,7 +21,7 @@ void main() {
 
     int multiplier = 0;
     vec2 blurStep;
-    vec2 offset = vec2(uTexelHeightOffset, uTexelWidthOffset);// horizontal, vertical
+    vec2 offset = vec2(uTexelHeightOffset, uTexelWidthOffset); // horizontal, vertical
 
     for (int i = 0; i < SAMPLES; i++)
     {

@@ -11,12 +11,13 @@ import android.widget.Button
 import android.widget.SeekBar
 import android.widget.TextView
 import com.example.seungwon.openglestriangle.R
+import com.example.seungwon.openglestriangle.util.getTempFilePath
 import com.example.seungwon.openglestriangle.util.renderToBitmap
 import com.example.seungwon.openglestriangle.util.saveToFile
 
 class BlurMappingActivity : AppCompatActivity(), View.OnTouchListener {
     private var glSurfaceView: GLSurfaceView? = null
-    private val renderer: BlurRendererWithMapper = BlurRendererWithMapper(this)
+    private val renderer: BlurRendererWithMapper2 = BlurRendererWithMapper2(this)
 
     var renderRectWidth: Int = 0
     var renderRectHeight: Int = 0
@@ -41,10 +42,11 @@ class BlurMappingActivity : AppCompatActivity(), View.OnTouchListener {
 
         val saveBtn = findViewById<Button>(R.id.blur_save)
         saveBtn.setOnClickListener {
-            val filePath = "${externalCacheDir.absolutePath}/${System.currentTimeMillis()}.jpg"
+            val filePath = getTempFilePath(externalCacheDir.absolutePath)
             val bitmap =
                 Bitmap.createBitmap(renderRectWidth, renderRectHeight, Bitmap.Config.ARGB_8888)
             glSurfaceView?.queueEvent {
+                glSurfaceView?.requestRender()
                 bitmap.renderToBitmap(renderRectWidth, renderRectHeight)
                 bitmap.saveToFile(filePath)
                 bitmap.recycle()
@@ -152,31 +154,24 @@ class BlurMappingActivity : AppCompatActivity(), View.OnTouchListener {
     private fun getScaledFactorX(renderRectWidth: Int, scaledWidth: Float): Float =
         renderRectWidth / scaledWidth
 
+    var startPointRawX = 0
+    var startPointRawY = 0
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
         if (event == null) {
             return false
         }
 
-        Log.d(TAG, "onTouch ${event.action} ${event.x} ${event.y}")
-
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
 
                 // TODO render rect size
-                if (BlurRendererWithMapper.SCALED_WIDTH > renderRectWidth ||
-                    BlurRendererWithMapper.SCALED_HEIGHT > renderRectHeight
-                ) {
-                    // TODO
-                    Log.d(TAG, "onTouch false")
-                    return false
-                }
-                val deltaX = getDeltaX(renderRectWidth, BlurRendererWithMapper.SCALED_WIDTH)
-                val scaleFactorX =
-                    getScaledFactorX(renderRectWidth, BlurRendererWithMapper.SCALED_WIDTH)
-
-                val deltaY = getDeltaX(renderRectHeight, BlurRendererWithMapper.SCALED_HEIGHT)
-                val scaleFactorY =
-                    getScaledFactorX(renderRectHeight, BlurRendererWithMapper.SCALED_HEIGHT)
+//                if (BlurRendererWithMapper.SCALED_WIDTH > renderRectWidth ||
+//                    BlurRendererWithMapper.SCALED_HEIGHT > renderRectHeight
+//                ) {
+//                    // TODO
+//                    Log.d(TAG, "onTouch false")
+//                    return false
+//                }
 
 //                val boundary = Rect(
 //                    deltaX.toInt(),
@@ -188,17 +183,38 @@ class BlurMappingActivity : AppCompatActivity(), View.OnTouchListener {
 //                    event.x,
 //                    event.y
 //                )
-                val newPositionXForGl = (event.x - deltaX) * scaleFactorX
-                val newPositionYForGl = (event.y - deltaY) * scaleFactorY
+                val newPositionXForGl = getPositionFromScaledView(
+                    event.x,
+                    renderRectWidth,
+                    BlurRendererWithMapper.SCALED_WIDTH
+                )
+                val newPositionYForGl = getPositionFromScaledView(
+                    event.y,
+                    renderRectHeight,
+                    BlurRendererWithMapper.SCALED_HEIGHT
+                )
                 Log.d(TAG, "onTouch newPositionXForGl $newPositionXForGl")
-                Log.d(TAG, "onTouch scaleFactorX $scaleFactorX")
-                Log.d(TAG, "onTouch deltaX $deltaX")
+//                Log.d(TAG, "onTouch scaleFactorX $scaleFactorX")
+//                Log.d(TAG, "onTouch deltaX $deltaX")
+                Log.d(TAG, "onTouch raw ${event.rawX} ${event.rawY}")
+                Log.d(TAG, "onTouch normal ${event.x} ${event.y}")
 
+//                renderer.textureRectStartPointX = newPositionXForGl
+//                renderer.textureRectStartPointY = newPositionYForGl
+//
+//                renderer.vertexRectStartPointX = newPositionXForGl
+//                renderer.vertexRectStartPointY = newPositionYForGl
                 renderer.textureRectStartPointX = newPositionXForGl
                 renderer.textureRectStartPointY = newPositionYForGl
 
-                renderer.vertexRectStartPointX = newPositionXForGl
-                renderer.vertexRectStartPointY = newPositionYForGl
+                renderer.vertexGlRectStartPointX = newPositionXForGl
+                renderer.vertexGlRectStartPointY = newPositionYForGl
+
+                renderer.translationX = event.x
+                renderer.translationY = event.y
+
+                startPointRawX = event.rawX.toInt()
+                startPointRawY = event.rawY.toInt()
 //                event.offsetLocation()
                 return true
             }
@@ -207,17 +223,16 @@ class BlurMappingActivity : AppCompatActivity(), View.OnTouchListener {
             }
             MotionEvent.ACTION_UP -> {
                 glSurfaceView?.queueEvent {
-
-                    val deltaX = getDeltaX(renderRectWidth, BlurRendererWithMapper.SCALED_WIDTH)
-                    val scaleFactorX =
-                        getScaledFactorX(renderRectWidth, BlurRendererWithMapper.SCALED_WIDTH)
-
-                    val deltaY = getDeltaX(renderRectHeight, BlurRendererWithMapper.SCALED_HEIGHT)
-                    val scaleFactorY =
-                        getScaledFactorX(renderRectHeight, BlurRendererWithMapper.SCALED_HEIGHT)
-
-                    val newPositionXForGl = (event.x - deltaX) * scaleFactorX
-                    val newPositionYForGl = (event.y - deltaY) * scaleFactorY
+                    val newPositionXForGl = getPositionFromScaledView(
+                        event.x,
+                        renderRectWidth,
+                        BlurRendererWithMapper.SCALED_WIDTH
+                    )
+                    val newPositionYForGl = getPositionFromScaledView(
+                        event.y,
+                        renderRectHeight,
+                        BlurRendererWithMapper.SCALED_HEIGHT
+                    )
 
 //                    Log.d(TAG, "onTouch ${event.x}")
 //                    val translatedMatrix = FloatArray(16)
@@ -236,23 +251,48 @@ class BlurMappingActivity : AppCompatActivity(), View.OnTouchListener {
 //                    matrix.setValues(combinedMatrix)
 //                    event.transform(matrix)
 
-                    Log.d(TAG, "onTouch transform newPositionXForGl ${event.x}  ${event.y}")
+//                    Log.d(TAG, "onTouch transform newPositionXForGl ${event.x}  ${event.y}")
                     Log.d(TAG, "onTouch newPositionXForGl $newPositionXForGl $newPositionYForGl")
-                    Log.d(TAG, "onTouch scaleFactorX $scaleFactorX")
-                    Log.d(TAG, "onTouch deltaX $deltaX")
+//                    Log.d(TAG, "onTouch scaleFactorX $scaleFactorX")
+//                    Log.d(TAG, "onTouch deltaX $deltaX")
+                    Log.d(TAG, "onTouch raw End ${event.rawX} ${event.rawY}")
+                    Log.d(TAG, "onTouch normal End ${event.x} ${event.y}")
+
+//                    renderer.textureRectEndPointX = newPositionXForGl
+//                    renderer.textureRectEndPointY = newPositionYForGl
+//
+//                    renderer.vertexRectEndPointX = newPositionXForGl
+//                    renderer.vertexRectEndPointY = newPositionYForGl
 
                     renderer.textureRectEndPointX = newPositionXForGl
                     renderer.textureRectEndPointY = newPositionYForGl
 
-                    renderer.vertexRectEndPointX = newPositionXForGl
-                    renderer.vertexRectEndPointY = newPositionYForGl
+                    renderer.vertexGlRectEndPointX = newPositionXForGl
+                    renderer.vertexGlRectEndPointY = newPositionYForGl
 
+                    renderer.lengthOfFboW = kotlin.math.abs(event.rawX - startPointRawX).toInt()
+                    renderer.lengthOfFboH = kotlin.math.abs(event.rawY - startPointRawY).toInt()
+                    Log.d(
+                        TAG,
+                        "onTouch lengthOfFboW=${renderer.lengthOfFboW} lengthOfFboH=${renderer.lengthOfFboH}"
+                    )
                     renderer.onDrawBlurRect { glSurfaceView?.requestRender() }
                 }
                 return true
             }
         }
         return false
+    }
+
+    private fun getPositionFromScaledView(
+        position: Float,
+        resolution: Int,
+        scaledResolution: Float
+    ): Float {
+        val deltaX = getDeltaX(resolution, scaledResolution)
+        val scaleFactorX = getScaledFactorX(resolution, scaledResolution)
+
+        return (position - deltaX) * scaleFactorX
     }
 
     companion object {

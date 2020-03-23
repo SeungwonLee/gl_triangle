@@ -57,7 +57,7 @@ object FrameBufferUtil {
         when (glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER)) {
             GLES20.GL_FRAMEBUFFER_COMPLETE ->
                 return TextureFrameBuffer(
-                    frameBufferIds[0], textureIds[0]
+                    frameBufferIds[0], textureIds[0], width, height
                 )
             GLES20.GL_FRAMEBUFFER_UNSUPPORTED ->
                 error("GL_FRAMEBUFFER_UNSUPPORTED")
@@ -66,5 +66,19 @@ object FrameBufferUtil {
         }
     }
 
-    data class TextureFrameBuffer(val frameBufferId: Int, val textureId: Int)
+    data class TextureFrameBuffer(
+        val frameBufferId: Int,
+        val textureId: Int,
+        val width: Int,
+        val height: Int
+    ) {
+        fun bind() {
+            GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBufferId)
+            GLES20.glViewport(0, 0, width, height)
+        }
+
+        fun unbind() {
+            GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
+        }
+    }
 }

@@ -19,6 +19,7 @@
         android:layout_height="wrap_content"
         android:text="intensity(0): "
         android:background="#ffffff"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="@+id/blur_intensity_seekbar"
         app:layout_constraintTop_toTopOf="@+id/blur_intensity_seekbar" />
@@ -27,6 +28,7 @@
         android:id="@+id/blur_intensity_seekbar"
         android:layout_width="0dp"
         android:layout_height="50dp"
+        android:visibility="gone"
         app:layout_constraintStart_toEndOf="@id/blur_intensity_seekbar_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/blur_offset_seekbar" />
@@ -45,6 +47,7 @@
         android:id="@+id/blur_offset_seekbar"
         android:layout_width="0dp"
         android:layout_height="50dp"
+        android:visibility="gone"
         app:layout_constraintStart_toEndOf="@id/blur_offset_seekbar_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
@@ -54,6 +57,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Gaussian blur"
+        android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -62,6 +66,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Box blur"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/blur_type_txt" />
 
@@ -70,6 +75,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Gaussian blur"
+        android:visibility="gone"
         app:layout_constraintStart_toEndOf="@+id/box_blur_btn"
         app:layout_constraintTop_toBottomOf="@+id/blur_type_txt" />
 
@@ -78,6 +84,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Stack blur"
+        android:visibility="gone"
         app:layout_constraintStart_toEndOf="@+id/gaussian_blur_btn"
         app:layout_constraintTop_toBottomOf="@+id/blur_type_txt" />
 
@@ -86,6 +93,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Save"
+        android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@+id/box_blur_btn"
         app:layout_constraintStart_toStartOf="parent" />
 
