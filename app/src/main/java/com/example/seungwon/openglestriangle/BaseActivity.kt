@@ -15,9 +15,14 @@ abstract class BaseActivity : AppCompatActivity() {
         glSurfaceView?.let {
             it.setEGLContextClientVersion(2)
             it.setRenderer(getRenderer())
+            if (isDirty()) {
+                // Draw only `requestRender()` called.
+                it.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
+            }
         }
     }
 
+    open fun isDirty(): Boolean = false
     abstract fun getRenderer(): GLSurfaceView.Renderer
 
     override fun onResume() {

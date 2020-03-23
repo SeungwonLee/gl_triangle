@@ -167,7 +167,7 @@ class BlurRendererWithMapper(private val context: Context) : GLSurfaceView.Rende
         // load blur txt shaders
         loadBlurProgram()
 
-//        renderOriginalTexture()
+        renderOriginalTexture()
         cachedTime = System.currentTimeMillis()
         rectVertexCoordsList.forEachIndexed { index, floats ->
             rectVertexBuffer.clear()
@@ -728,7 +728,7 @@ class BlurRendererWithMapper(private val context: Context) : GLSurfaceView.Rende
         private const val WIDTH_DIVIDER = 3f
         //0.003f//0.002f//1.3846153846f//1.3846153846f//0.003155048076953f'
 
-        const val SCALED_WIDTH = 1440f
+        const val SCALED_WIDTH = 1000f
         const val SCALED_HEIGHT = 2460f
     }
 }

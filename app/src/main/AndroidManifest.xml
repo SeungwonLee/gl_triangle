@@ -17,7 +17,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".blur.stackblur.StackBlurActivity"></activity>
+        <activity android:name=".blur.rect.BlurScaledActivity"></activity>
+        <activity android:name=".blur.stackblur.StackBlurActivity" />
         <activity android:name=".blur.rect.BlurMappingActivity" />
         <activity android:name=".mosaic.rect.MosaicRectActivity" />
         <activity android:name=".BaseActivity" />

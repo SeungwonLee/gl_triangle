@@ -1,30 +1,23 @@
 package com.example.seungwon.openglestriangle.blur.rect
 
-import android.graphics.Bitmap
 import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import android.widget.Button
-import android.widget.SeekBar
-import android.widget.TextView
 import com.example.seungwon.openglestriangle.R
-import com.example.seungwon.openglestriangle.util.getTempFilePath
-import com.example.seungwon.openglestriangle.util.renderToBitmap
-import com.example.seungwon.openglestriangle.util.saveToFile
 
-class BlurMappingActivity : AppCompatActivity(), View.OnTouchListener {
+class BlurScaledActivity : AppCompatActivity(), View.OnTouchListener {
+    private var renderRectWidth: Int = 0
+    private var renderRectHeight: Int = 0
+
     private var glSurfaceView: GLSurfaceView? = null
-    private val renderer: BlurRendererWithMapper = BlurRendererWithMapper(this)
-
-    var renderRectWidth: Int = 0
-    var renderRectHeight: Int = 0
+    private val renderer = BlurRendererWithMapper2(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_blur_mapping)
+        setContentView(R.layout.activity_base)
 
         glSurfaceView = findViewById(R.id.gl_surface)
         glSurfaceView?.let {
@@ -39,103 +32,20 @@ class BlurMappingActivity : AppCompatActivity(), View.OnTouchListener {
             renderRectWidth = it.width()
             renderRectHeight = it.height()
         }
-
-        val saveBtn = findViewById<Button>(R.id.blur_save)
-        saveBtn.setOnClickListener {
-            val filePath = getTempFilePath(externalCacheDir.absolutePath)
-            val bitmap =
-                Bitmap.createBitmap(renderRectWidth, renderRectHeight, Bitmap.Config.ARGB_8888)
-            glSurfaceView?.queueEvent {
-                glSurfaceView?.requestRender()
-                bitmap.renderToBitmap(renderRectWidth, renderRectHeight)
-                bitmap.saveToFile(filePath)
-                bitmap.recycle()
-            }
-            Log.d(TAG, "SAVE $filePath")
-        }
-
-        initSeekBar()
-        initBlurAlgorithmBtn()
-    }
-
-    private fun initBlurAlgorithmBtn() {
-        val boxBtn = findViewById<Button>(R.id.box_blur_btn)
-        val gaussianBtn = findViewById<Button>(R.id.gaussian_blur_btn)
-        val stackBtn = findViewById<Button>(R.id.stack_blur_btn)
-
-        boxBtn.setOnClickListener {
-            updateBlurAlgorithm(BlurType.Box)
-        }
-        gaussianBtn.setOnClickListener {
-            updateBlurAlgorithm(BlurType.Gaussian)
-        }
-        stackBtn.setOnClickListener {
-            updateBlurAlgorithm(BlurType.StackBlur)
-        }
-    }
-
-    private fun getBlurTypeStr(blurType: BlurType): String = when (blurType) {
-        BlurType.Box -> "Box Blur"
-        BlurType.StackBlur -> "Stack Blur"
-        BlurType.Gaussian -> "Gaussian Blur"
-        else -> "Gaussian Blur"
-    }
-
-    private fun updateBlurAlgorithm(blurType: BlurType) {
-        val blurTypeTxt = findViewById<TextView>(R.id.blur_type_txt)
-        blurTypeTxt.text = getBlurTypeStr(blurType)
-
-        renderer.blurType = blurType
-        glSurfaceView?.requestRender()
-    }
-
-    private fun initSeekBar() {
-        val blurOffsetSeekBar = findViewById<SeekBar>(R.id.blur_offset_seekbar)
-        val blurOffsetSeekBarTextView = findViewById<TextView>(R.id.blur_offset_seekbar_text)
-        blurOffsetSeekBar.setOnSeekBarChangeListener(object :
-            SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                val offset = (progress / 100f)
-                Log.d("BlurRectActivity", "onProgressChanged $offset")
-                glSurfaceView?.queueEvent {
-                    renderer.blurOffset = offset
-                    glSurfaceView?.requestRender()
-                }
-                blurOffsetSeekBarTextView.text = "offset($offset): "
-            }
-
-            override fun onStartTrackingTouch(seekBar: SeekBar?) = Unit
-            override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
-        })
-
-        val blurIntensitySeekBar = findViewById<SeekBar>(R.id.blur_intensity_seekbar)
-        val blurIntensitySeekBarTextView = findViewById<TextView>(R.id.blur_intensity_seekbar_text)
-        blurIntensitySeekBar.setOnSeekBarChangeListener(object :
-            SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                val intensity =
-                    when {
-                        progress < 30 -> {
-                            1
-                        }
-                        progress > 80 -> {
-                            3
-                        }
-                        else -> {
-                            2
-                        }
-                    }
-                glSurfaceView?.queueEvent {
-                    renderer.loopCount = intensity
-                    Log.d("BlurRectActivity", "onProgressChanged2 ${renderer.loopCount}")
-                    glSurfaceView?.requestRender()
-                }
-                blurIntensitySeekBarTextView.text = "intensity($intensity): "
-            }
-
-            override fun onStartTrackingTouch(seekBar: SeekBar?) = Unit
-            override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
-        })
+//
+//        val saveBtn = findViewById<Button>(R.id.blur_save)
+//        saveBtn.setOnClickListener {
+//            val filePath = getTempFilePath(externalCacheDir.absolutePath)
+//            val bitmap =
+//                Bitmap.createBitmap(renderRectWidth, renderRectHeight, Bitmap.Config.ARGB_8888)
+//            glSurfaceView?.queueEvent {
+//                glSurfaceView?.requestRender()
+//                bitmap.renderToBitmap(renderRectWidth, renderRectHeight)
+//                bitmap.saveToFile(filePath)
+//                bitmap.recycle()
+//            }
+//            Log.d(TAG, "SAVE $filePath")
+//        }
     }
 
     override fun onResume() {
@@ -154,8 +64,8 @@ class BlurMappingActivity : AppCompatActivity(), View.OnTouchListener {
     private fun getScaledFactorX(renderRectWidth: Int, scaledWidth: Float): Float =
         renderRectWidth / scaledWidth
 
-    var startPointRawX = 0
-    var startPointRawY = 0
+    var startPointRawX = 0f
+    var startPointRawY = 0f
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
         if (event == null) {
             return false
@@ -199,12 +109,25 @@ class BlurMappingActivity : AppCompatActivity(), View.OnTouchListener {
                 Log.d(TAG, "onTouch raw ${event.rawX} ${event.rawY}")
                 Log.d(TAG, "onTouch normal ${event.x} ${event.y}")
 
+//                renderer.textureRectStartPointX = newPositionXForGl
+//                renderer.textureRectStartPointY = newPositionYForGl
+//
+//                renderer.vertexRectStartPointX = newPositionXForGl
+//                renderer.vertexRectStartPointY = newPositionYForGl
                 renderer.textureRectStartPointX = newPositionXForGl
                 renderer.textureRectStartPointY = newPositionYForGl
 
-                renderer.vertexRectStartPointX = newPositionXForGl
-                renderer.vertexRectStartPointY = newPositionYForGl
+                renderer.vertexGlRectStartPointX = newPositionXForGl
+                renderer.vertexGlRectStartPointY = newPositionYForGl
 
+                renderer.translationXGl = newPositionXForGl
+                renderer.translationYGl = newPositionYForGl
+
+                renderer.translationXOriginal = event.x
+                renderer.translationYOriginal = event.y
+
+                startPointRawX = event.rawX
+                startPointRawY = event.rawY
 //                event.offsetLocation()
                 return true
             }
@@ -248,11 +171,49 @@ class BlurMappingActivity : AppCompatActivity(), View.OnTouchListener {
                     Log.d(TAG, "onTouch raw End ${event.rawX} ${event.rawY}")
                     Log.d(TAG, "onTouch normal End ${event.x} ${event.y}")
 
+//                    renderer.textureRectEndPointX = newPositionXForGl
+//                    renderer.textureRectEndPointY = newPositionYForGl
+//
+//                    renderer.vertexRectEndPointX = newPositionXForGl
+//                    renderer.vertexRectEndPointY = newPositionYForGl
+
                     renderer.textureRectEndPointX = newPositionXForGl
                     renderer.textureRectEndPointY = newPositionYForGl
 
-                    renderer.vertexRectEndPointX = newPositionXForGl
-                    renderer.vertexRectEndPointY = newPositionYForGl
+                    renderer.vertexGlRectEndPointX = newPositionXForGl
+                    renderer.vertexGlRectEndPointY = newPositionYForGl
+
+                    val convertedStartX = getPositionFromScaledView(
+                        startPointRawX,
+                        renderRectWidth,
+                        BlurRendererWithMapper2.SCALED_WIDTH
+                    )
+                    val convertedEndX = getPositionFromScaledView(
+                        event.rawX,
+                        renderRectWidth,
+                        BlurRendererWithMapper2.SCALED_WIDTH
+                    )
+
+                    val convertedStartY = getPositionFromScaledView(
+                        startPointRawY,
+                        renderRectHeight,
+                        BlurRendererWithMapper2.SCALED_HEIGHT
+                    )
+                    val convertedEndY = getPositionFromScaledView(
+                        event.rawY,
+                        renderRectHeight,
+                        BlurRendererWithMapper2.SCALED_HEIGHT
+                    )
+
+                    renderer.lengthOfFboW =
+                        kotlin.math.abs(convertedEndX - convertedStartX).toInt()
+                    renderer.lengthOfFboH = kotlin.math.abs(convertedEndY - convertedStartY).toInt()
+                    renderer.lengthOfOriginalW = event.rawX - startPointRawX
+                    renderer.lengthOfOriginalH = event.rawY - startPointRawY
+                    Log.d(
+                        TAG,
+                        "onTouch lengthOfFboW=${renderer.lengthOfFboW} lengthOfFboH=${renderer.lengthOfFboH}"
+                    )
 
                     renderer.onDrawBlurRect { glSurfaceView?.requestRender() }
                 }
@@ -274,6 +235,6 @@ class BlurMappingActivity : AppCompatActivity(), View.OnTouchListener {
     }
 
     companion object {
-        private const val TAG = "BlurMappingActivity"
+        private const val TAG = "BlurScaledActivity"
     }
 }
