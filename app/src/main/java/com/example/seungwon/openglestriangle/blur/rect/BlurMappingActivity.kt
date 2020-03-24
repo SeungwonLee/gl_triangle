@@ -186,12 +186,12 @@ class BlurMappingActivity : AppCompatActivity(), View.OnTouchListener {
                 val newPositionXForGl = getPositionFromScaledView(
                     event.x,
                     renderRectWidth,
-                    BlurRendererWithMapper2.SCALED_WIDTH
+                    SCALED_WIDTH
                 )
                 val newPositionYForGl = getPositionFromScaledView(
                     event.y,
                     renderRectHeight,
-                    BlurRendererWithMapper2.SCALED_HEIGHT
+                    SCALED_HEIGHT
                 )
                 Log.d(TAG, "onTouch newPositionXForGl $newPositionXForGl")
 //                Log.d(TAG, "onTouch scaleFactorX $scaleFactorX")
@@ -216,12 +216,12 @@ class BlurMappingActivity : AppCompatActivity(), View.OnTouchListener {
                     val newPositionXForGl = getPositionFromScaledView(
                         event.x,
                         renderRectWidth,
-                        BlurRendererWithMapper.SCALED_WIDTH
+                        SCALED_WIDTH
                     )
                     val newPositionYForGl = getPositionFromScaledView(
                         event.y,
                         renderRectHeight,
-                        BlurRendererWithMapper.SCALED_HEIGHT
+                        SCALED_HEIGHT
                     )
 
 //                    Log.d(TAG, "onTouch ${event.x}")
@@ -275,5 +275,7 @@ class BlurMappingActivity : AppCompatActivity(), View.OnTouchListener {
 
     companion object {
         private const val TAG = "BlurMappingActivity"
+        const val SCALED_WIDTH = 1000f
+        const val SCALED_HEIGHT = 2240f
     }
 }
