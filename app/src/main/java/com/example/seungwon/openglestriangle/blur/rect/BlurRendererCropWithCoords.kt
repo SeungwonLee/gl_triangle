@@ -222,15 +222,15 @@ class BlurRendererCropWithCoords(private val context: Context) : GLSurfaceView.R
             Log.d(TAG, "DURATION1 MS ${System.currentTimeMillis() - cachedTime}")
             cachedTime = System.currentTimeMillis()
 
-//            for (i in 0 until loopCount) {
-////             render FBO A to FBO B, using horizontal blur
-//                renderHorizontalBlur(vertexBuffer, txtBufferYFlip)
-//
-//                // render FBO B to scene, using vertical blur
-//                renderVerticalBlur(vertexBuffer, txtBufferYFlip)
-//                Log.d(TAG, "DURATION2 MS ${System.currentTimeMillis() - cachedTime}")
-//                cachedTime = System.currentTimeMillis()
-//            }
+            for (i in 0 until loopCount) {
+//             render FBO A to FBO B, using horizontal blur
+                renderHorizontalBlur(vertexBuffer, txtBufferYFlip)
+
+                // render FBO B to scene, using vertical blur
+                renderVerticalBlur(vertexBuffer, txtBufferYFlip)
+                Log.d(TAG, "DURATION2 MS ${System.currentTimeMillis() - cachedTime}")
+                cachedTime = System.currentTimeMillis()
+            }
 
             renderScene2(
                 rectVertexBuffer,

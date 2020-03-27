@@ -1,26 +1,31 @@
-#define SAMPLES 9
+// https://learnopengl.com/Advanced-Lighting/Bloom
+#define ARRAY_CNT 5
 precision mediump float;
 uniform sampler2D uTexture;
 
 varying vec2 vTextureCoord;
-varying vec2 vBlurTextureCoord[SAMPLES];
 
-// weight kernal size=3x3, sigma=1 from [http://dev.theomader.com/gaussian-kernel-calculator/]
-
+uniform float uTexelWidthOffset;
+uniform float uTexelHeightOffset;
 void main()
 {
-    vec3 sum = vec3(0.0);
-    vec4 fragColor = texture2D(uTexture, vTextureCoord);
+    vec2 offset = vec2(uTexelHeightOffset, uTexelWidthOffset);// horizontal, vertical
+    // weight kernal size=3x3, sigma=1
+    // sample count = 9
+    // [http://dev.theomader.com/gaussian-kernel-calculator/]
+    float weight[ARRAY_CNT];
+    weight[0] = 0.195346;
+    weight[1] = 0.123317;
+    weight[2] = 0.077847;
+    weight[3] = 0.123317;
+    weight[4] = 0.077847;
 
-    sum += texture2D(uTexture, vBlurTextureCoord[0]).rgb * 0.077847;
-    sum += texture2D(uTexture, vBlurTextureCoord[1]).rgb * 0.123317;
-    sum += texture2D(uTexture, vBlurTextureCoord[2]).rgb * 0.077847;
-    sum += texture2D(uTexture, vBlurTextureCoord[3]).rgb * 0.123317;
-    sum += texture2D(uTexture, vBlurTextureCoord[4]).rgb * 0.195346;
-    sum += texture2D(uTexture, vBlurTextureCoord[5]).rgb * 0.123317;
-    sum += texture2D(uTexture, vBlurTextureCoord[6]).rgb * 0.077847;
-    sum += texture2D(uTexture, vBlurTextureCoord[7]).rgb * 0.123317;
-    sum += texture2D(uTexture, vBlurTextureCoord[8]).rgb * 0.077847;
+    vec3 sum = texture2D(uTexture, vTextureCoord).rgb * weight[0];
 
-    gl_FragColor = vec4(sum, fragColor.a);
+    for (int i = 1; i < ARRAY_CNT; i++) {
+        sum += texture2D(uTexture, vTextureCoord + vec2(float(i) * offset)).rgb * weight[i];
+        sum += texture2D(uTexture, vTextureCoord- vec2(float(i) * offset)).rgb * weight[i];
+    }
+
+    gl_FragColor = vec4(sum, 1.0);
 }

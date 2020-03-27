@@ -25,13 +25,34 @@ class BlurScaledActivity : AppCompatActivity(), View.OnTouchListener {
             it.setEGLContextClientVersion(2)
             it.setRenderer(renderer)
             // Draw only `requestRender()` called.
-            it.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
+//            it.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
             it.setOnTouchListener(this)
         }
 
         renderer.onSurfaceSizeChanged = {
+//            if (it.width() > it.height()) {
+//                renderRectWidth = 2240//it.width()
+//                renderRectHeight = 1440//it.height()
+//
+//                SCALED_WIDTH = 2240f//it.width().toFloat()
+//                SCALED_HEIGHT = 1440f//it.height().toFloat()
+//            } else {
+//                renderRectWidth = 1440
+//                renderRectHeight = 2240
+//
+//                SCALED_WIDTH = 1440f
+//                SCALED_HEIGHT = 2240f
+//            }
+
             renderRectWidth = it.width()
             renderRectHeight = it.height()
+
+            SCALED_WIDTH = it.width().toFloat()
+            SCALED_HEIGHT = it.height().toFloat()
+
+            glSurfaceView?.requestRender()
+
+            Log.d(TAG, "w=$renderRectWidth h=$renderRectHeight")
         }
 //
 //        val saveBtn = findViewById<Button>(R.id.blur_save)
@@ -155,6 +176,12 @@ class BlurScaledActivity : AppCompatActivity(), View.OnTouchListener {
                         SCALED_HEIGHT
                     )
 
+                    Log.d(
+                        TAG,
+                        "r.w $renderRectWidth, r.h $renderRectHeight " +
+                                "s.w $SCALED_WIDTH s.h $SCALED_HEIGHT"
+                    )
+
 //                    Log.d(TAG, "onTouch ${event.x}")
 //                    val translatedMatrix = FloatArray(16)
 //                    Matrix.setIdentityM(translatedMatrix, 0)
@@ -241,7 +268,7 @@ class BlurScaledActivity : AppCompatActivity(), View.OnTouchListener {
 
     companion object {
         private const val TAG = "BlurScaledActivity"
-        const val SCALED_WIDTH = 1440f
-        const val SCALED_HEIGHT = 2240f
+        var SCALED_WIDTH = 1440f
+        var SCALED_HEIGHT = 2240f
     }
 }

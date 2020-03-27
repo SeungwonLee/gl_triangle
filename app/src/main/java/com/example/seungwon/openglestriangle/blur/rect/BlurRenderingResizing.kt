@@ -65,14 +65,10 @@ class BlurRenderingResizing(private val context: Context) : GLSurfaceView.Render
     private val rectVertexBuffer: FloatBuffer
     private val rectTxtBuffer: FloatBuffer
 
-    private val matrixView: FloatArray = FloatArray(16)
-
     private val identityMatrixView: FloatArray = FloatArray(16)
     private val scaledTxtMatrixView: FloatArray = FloatArray(16)
     private val scaledVertexMatrix: FloatArray = FloatArray(16)
-    private val projectionMatrix: FloatArray = FloatArray(16)
-    private val scaledBlurVertexMatrix: FloatArray = FloatArray(16)
-    private var scaledVertexMatrixForCrop: FloatArray = FloatArray(16)
+    private var projectionMatrix: FloatArray = FloatArray(16)
 
     private var originalRenderingProgram: Int = 0
     private var gaussianBlurProgram: Int = -1
@@ -104,7 +100,7 @@ class BlurRenderingResizing(private val context: Context) : GLSurfaceView.Render
     var onSurfaceSizeChanged: ((rect: Rect) -> Unit)? = null
 
     var blurOffset: Float = 1f
-    var loopCount = 3
+    var loopCount = 5
 
     @Volatile
     var textureRectStartPointX: Float = 0f
@@ -236,8 +232,8 @@ class BlurRenderingResizing(private val context: Context) : GLSurfaceView.Render
 
                 // render FBO B to scene, using vertical blur
                 renderVerticalBlur(vertexBuffer, txtBufferYFlip)
-                Log.d(TAG, "DURATION2 MS ${System.currentTimeMillis() - cachedTime}")
-                cachedTime = System.currentTimeMillis()
+//                Log.d(TAG, "DURATION2 MS ${System.currentTimeMillis() - cachedTime}")
+//                cachedTime = System.currentTimeMillis()
             }
 
             renderScene2(
@@ -288,7 +284,6 @@ class BlurRenderingResizing(private val context: Context) : GLSurfaceView.Render
     private fun renderVerticalBlur(vertexBuffer: FloatBuffer, textureBuffer: FloatBuffer) {
         val textureFrameBufferA = textureFrameBufferA ?: error("textureFrameBufferA null")
         val textureFrameBufferB = textureFrameBufferB ?: error("textureFrameBufferB null")
-        Matrix.setIdentityM(matrixView, 0)
 
         GLES20.glUseProgram(gaussianBlurProgram)
 
@@ -394,9 +389,9 @@ class BlurRenderingResizing(private val context: Context) : GLSurfaceView.Render
 
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
 
-        GLES20.glUniformMatrix4fv(originalMvpHandle, 1, false, matrixView, 0)
-        GLES20.glUniformMatrix4fv(originalTextureMvpHandle, 1, false, matrixView, 0)
-        GLES20.glUniformMatrix4fv(originalProjectionMatrixHandle, 1, false, matrixView, 0)
+        GLES20.glUniformMatrix4fv(originalMvpHandle, 1, false, identityMatrixView, 0)
+        GLES20.glUniformMatrix4fv(originalTextureMvpHandle, 1, false, identityMatrixView, 0)
+        GLES20.glUniformMatrix4fv(originalProjectionMatrixHandle, 1, false, identityMatrixView, 0)
 
         GLES20.glEnableVertexAttribArray(originalPositionHandle)
         GLES20.glVertexAttribPointer(
@@ -439,7 +434,7 @@ class BlurRenderingResizing(private val context: Context) : GLSurfaceView.Render
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
 
         GLES20.glUniformMatrix4fv(originalMvpHandle, 1, false, scaledVertexMatrix, 0)
-        GLES20.glUniformMatrix4fv(originalTextureMvpHandle, 1, false, matrixView, 0)
+        GLES20.glUniformMatrix4fv(originalTextureMvpHandle, 1, false, identityMatrixView, 0)
         GLES20.glUniformMatrix4fv(originalProjectionMatrixHandle, 1, false, projectionMatrix, 0)
 
         GLES20.glEnableVertexAttribArray(originalPositionHandle)
@@ -479,23 +474,12 @@ class BlurRenderingResizing(private val context: Context) : GLSurfaceView.Render
 
         GLES20.glViewport(0, 0, width, height)
 
-        Matrix.setIdentityM(scaledBlurVertexMatrix, 0)
+        projectionMatrix = FloatArray(16)
         Matrix.setIdentityM(identityMatrixView, 0)
         Matrix.setIdentityM(scaledVertexMatrix, 0)
         Matrix.setIdentityM(scaledTxtMatrixView, 0)
         Matrix.setIdentityM(projectionMatrix, 0)
 
-        Matrix.setIdentityM(matrixView, 0)
-
-        val temp2 = FloatArray(16)
-        Matrix.setIdentityM(temp2, 0)
-        Matrix.scaleM(temp2, 0, width.toFloat(), height.toFloat(), 0f)
-        val rotatedMatrixForOriginal = FloatArray(16)
-        Matrix.setIdentityM(rotatedMatrixForOriginal, 0)
-        Matrix.rotateM(rotatedMatrixForOriginal, 0, 30f, 0f, 0f, -1f)
-
-        val scaledMatrixForOriginal = FloatArray(16)
-        Matrix.setIdentityM(scaledMatrixForOriginal, 0)
         Matrix.scaleM(
             scaledVertexMatrix,
             0, /*width.toFloat()*/
@@ -503,7 +487,6 @@ class BlurRenderingResizing(private val context: Context) : GLSurfaceView.Render
             SCALED_HEIGHT,
             0f
         )
-//        Matrix.multiplyMM(scaledVertexMatrix, 0, rotatedMatrixForOriginal, 0, scaledMatrixForOriginal, 0)
 
         Matrix.orthoM(
             projectionMatrix,
@@ -830,7 +813,7 @@ class BlurRenderingResizing(private val context: Context) : GLSurfaceView.Render
 
         private const val BLUR_RATIO = 2
         private const val BLUR_OFFSET = 1.3846153846f//0.004f//0.003f//0.00001f
-        private const val REDUCED_SAMPLE_SIZE_FACTOR = 5f
+        private const val REDUCED_SAMPLE_SIZE_FACTOR = 1f
         //0.003f//0.002f//1.3846153846f//1.3846153846f//0.003155048076953f'
     }
 }

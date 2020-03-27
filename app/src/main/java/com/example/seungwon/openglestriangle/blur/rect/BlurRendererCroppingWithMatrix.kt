@@ -21,7 +21,7 @@ import java.nio.FloatBuffer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-class BlurRendererCropping(private val context: Context) : GLSurfaceView.Renderer {
+class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceView.Renderer {
     private val squareCoords: FloatArray = floatArrayOf(
         // X, Y
         -1f, -1f,

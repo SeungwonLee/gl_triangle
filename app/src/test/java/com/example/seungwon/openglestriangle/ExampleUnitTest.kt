@@ -9,6 +9,12 @@ import org.junit.Test
  */
 class ExampleUnitTest {
     @Test
+    fun test() {
+        repeat(3) {
+            System.out.println("hi")
+        }
+    }
+    @Test
     fun addition_isCorrect() {
         val sampler = 9
         var offset = 1 / 1440f
