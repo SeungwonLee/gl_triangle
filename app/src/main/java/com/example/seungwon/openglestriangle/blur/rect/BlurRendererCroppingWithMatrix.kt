@@ -58,18 +58,12 @@ class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceVi
     private val vertexBuffer: FloatBuffer
     private val txtBuffer: FloatBuffer
     private val txtBufferYFlip: FloatBuffer
-    private val rectVertexCoordsList: ArrayList<FloatArray> = ArrayList()
-    private val rectTxtCoordsList: ArrayList<FloatArray> = ArrayList()
-    private val rectVertexBuffer: FloatBuffer
-    private val rectTxtBuffer: FloatBuffer
-
-    private val matrixView: FloatArray = FloatArray(16)
 
     private val identityMatrixView: FloatArray = FloatArray(16)
     private val scaledTxtMatrixView: FloatArray = FloatArray(16)
     private val scaledVertexMatrix: FloatArray = FloatArray(16)
     private val projectionMatrix: FloatArray = FloatArray(16)
-    private val scaledBlurVertexMatrix: FloatArray = FloatArray(16)
+    private val scaledBlurAttachedViewVertexMatrix: FloatArray = FloatArray(16)
     private var scaledVertexMatrixForCrop: FloatArray = FloatArray(16)
 
     private var originalRenderingProgram: Int = 0
@@ -98,6 +92,7 @@ class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceVi
 
     private var textureFrameBufferA: FrameBufferUtil.TextureFrameBuffer? = null
     private var textureFrameBufferB: FrameBufferUtil.TextureFrameBuffer? = null
+    private var cropFrameBuffer: FrameBufferUtil.TextureFrameBuffer? = null
 
     var onSurfaceSizeChanged: ((rect: Rect) -> Unit)? = null
 
@@ -129,10 +124,10 @@ class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceVi
     var vertexGlRectEndPointY: Float = 0f
 
     @Volatile
-    var lengthOfFboW = 0
+    var scaledOriginalRectW = 0
 
     @Volatile
-    var lengthOfFboH = 0
+    var scaledOriginalRectH = 0
 
     var translationXGl: Float = 0f
     var translationYGl: Float = 0f
@@ -140,8 +135,8 @@ class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceVi
     var translationXOriginal: Float = 0f
     var translationYOriginal: Float = 0f
 
-    var lengthOfOriginalW: Float = 0f
-    var lengthOfOriginalH: Float = 0f
+    var sizeOfViewRectW: Float = 0f
+    var sizeOfViewRectH: Float = 0f
 
     var blurType: BlurType = BlurType.Gaussian
 
@@ -171,17 +166,8 @@ class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceVi
             .asFloatBuffer()
             .put(txtCoordsYFlip)
         txtBufferYFlip.position(0)
-
-        rectVertexBuffer = ByteBuffer.allocateDirect(txtCoords.size * FLOAT_BYTE_SIZE)
-            .order(ByteOrder.nativeOrder())
-            .asFloatBuffer()
-
-        rectTxtBuffer = ByteBuffer.allocateDirect(txtCoords.size * FLOAT_BYTE_SIZE)
-            .order(ByteOrder.nativeOrder())
-            .asFloatBuffer()
     }
 
-    var cachedTime = 0L
     override fun onDrawFrame(gl: GL10?) {
         GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
@@ -195,47 +181,34 @@ class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceVi
             halfVertexBuffer,
             txtBuffer,
             scaledVertexMatrix,
-            scaledTxtMatrixView,
+            identityMatrixView,
             projectionMatrix
         )
 
-        cachedTime = System.currentTimeMillis()
-        rectVertexCoordsList.forEachIndexed { index, floats ->
-            rectVertexBuffer.clear()
-            rectVertexBuffer.put(floats)
-            rectVertexBuffer.position(0)
+        // render scene to FBO A
+        renderScene(
+            vertexBuffer,
+            txtBufferYFlip,
+            textureFrameBufferA?.frameBufferId ?: 0,
+            originalTextureId
+        )
 
-            rectTxtBuffer.clear()
-            rectTxtBuffer.put(rectTxtCoordsList[index])
-            rectTxtBuffer.position(0)
+//        for (i in 0 until loopCount) {
+////             render FBO A to FBO B, using horizontal blur
+//            renderHorizontalBlur(vertexBuffer, txtBufferYFlip)
+//
+//            // render FBO B to scene, using vertical blur
+//            renderVerticalBlur(vertexBuffer, txtBufferYFlip)
+//        }
 
-            // render scene to FBO A
-            renderScene(
-                halfVertexBuffer,
-                txtBufferYFlip,
-                textureFrameBufferA?.frameBufferId ?: 0,
-                originalTextureId
-            )
-            Log.d(TAG, "DURATION1 MS ${System.currentTimeMillis() - cachedTime}")
-            cachedTime = System.currentTimeMillis()
+        renderCrop(halfVertexBuffer, txtBufferYFlip, textureFrameBufferA?.textureId ?: 0)
+//            renderCropWithRect(rectVertexBuffer, rectTxtBuffer, textureFrameBufferA?.textureId ?: 0)
 
-            for (i in 0 until loopCount) {
-//             render FBO A to FBO B, using horizontal blur
-                renderHorizontalBlur(vertexBuffer, txtBufferYFlip)
-
-                // render FBO B to scene, using vertical blur
-                renderVerticalBlur(vertexBuffer, txtBufferYFlip)
-                Log.d(TAG, "DURATION2 MS ${System.currentTimeMillis() - cachedTime}")
-                cachedTime = System.currentTimeMillis()
-            }
-
-            renderScene2(
-                halfVertexBuffer,
-                txtBuffer,
-                textureFrameBufferA?.textureId ?: 0
-            )
-            Log.d(TAG, "DURATION3 MS ${System.currentTimeMillis() - cachedTime}")
-        }
+        renderScene2(
+            halfVertexBuffer,
+            txtBuffer,
+            cropFrameBuffer?.textureId ?: 0
+        )
     }
 
     private fun renderOriginalTexture(
@@ -252,7 +225,6 @@ class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceVi
         GLES20.glUniformMatrix4fv(originalMvpHandle, 1, false, scaledVertexMatrix, 0)
         GLES20.glUniformMatrix4fv(originalTextureMvpHandle, 1, false, scaledTxtMatrixView, 0)
         GLES20.glUniformMatrix4fv(originalProjectionMatrixHandle, 1, false, projectionMatrix, 0)
-
         GLES20.glEnableVertexAttribArray(originalPositionHandle)
         GLES20.glVertexAttribPointer(
             originalPositionHandle,
@@ -277,7 +249,6 @@ class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceVi
     private fun renderVerticalBlur(vertexBuffer: FloatBuffer, textureBuffer: FloatBuffer) {
         val textureFrameBufferA = textureFrameBufferA ?: error("textureFrameBufferA null")
         val textureFrameBufferB = textureFrameBufferB ?: error("textureFrameBufferB null")
-        Matrix.setIdentityM(matrixView, 0)
 
         GLES20.glUseProgram(gaussianBlurProgram)
 
@@ -285,7 +256,7 @@ class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceVi
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureFrameBufferB.textureId)
 
         GLES20.glUniform1f(texelHeightOffset, 0f)
-        GLES20.glUniform1f(texelWidthOffset, blurOffset / (lengthOfFboW / 3f))
+        GLES20.glUniform1f(texelWidthOffset, blurOffset / (width / 3f))
 //        GLES20.glUniform1f(isVerticalHandle, 1f)
 
         GLES20.glUniformMatrix4fv(mvpHandle, 1, false, identityMatrixView, 0)
@@ -317,6 +288,8 @@ class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceVi
             squareCoords.size / X_Y_COORDS_NUMBER
         )
 
+//        saveToFile("_v")
+
         textureFrameBufferA.unbind()
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
         GLES20.glDisableVertexAttribArray(positionHandle)
@@ -332,7 +305,7 @@ class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceVi
         textureFrameBufferB.bind()
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureFrameBufferA.textureId)
 
-        GLES20.glUniform1f(texelHeightOffset, blurOffset / (lengthOfFboH / 3f))
+        GLES20.glUniform1f(texelHeightOffset, blurOffset / (height / 3f))
         GLES20.glUniform1f(texelWidthOffset, 0f)
 //        GLES20.glUniform1f(isVerticalHandle, 0f)
 
@@ -379,15 +352,13 @@ class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceVi
     ) {
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBufferId)
 
-        Matrix.setIdentityM(matrixView, 0)
-
         GLES20.glUseProgram(originalRenderingProgram)
 
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
 
-        GLES20.glUniformMatrix4fv(originalMvpHandle, 1, false, scaledVertexMatrixForCrop, 0)
-        GLES20.glUniformMatrix4fv(originalTextureMvpHandle, 1, false, matrixView, 0)
-        GLES20.glUniformMatrix4fv(originalProjectionMatrixHandle, 1, false, projectionMatrix, 0)
+        GLES20.glUniformMatrix4fv(originalMvpHandle, 1, false, identityMatrixView, 0)
+        GLES20.glUniformMatrix4fv(originalTextureMvpHandle, 1, false, identityMatrixView, 0)
+        GLES20.glUniformMatrix4fv(originalProjectionMatrixHandle, 1, false, identityMatrixView, 0)
 
         GLES20.glEnableVertexAttribArray(originalPositionHandle)
         GLES20.glVertexAttribPointer(
@@ -408,7 +379,7 @@ class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceVi
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4)
 
-        saveToFile("_o", width, height)
+//        saveToFile("_o", width, height)
 //        saveToFile("_o2", lengthOfFboW, lengthOfFboH)
 
         if (frameBufferId != 0) {
@@ -424,9 +395,6 @@ class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceVi
         textureBuffer: FloatBuffer,
         textureId: Int
     ) {
-        val matrix = FloatArray(16)
-        Matrix.setIdentityM(matrix, 0)
-
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
         GLES20.glViewport(0, 0, width, height)
 
@@ -434,8 +402,14 @@ class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceVi
 
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
 
-        GLES20.glUniformMatrix4fv(originalMvpHandle, 1, false, scaledBlurVertexMatrix, 0)
-        GLES20.glUniformMatrix4fv(originalTextureMvpHandle, 1, false, matrix, 0)
+        GLES20.glUniformMatrix4fv(
+            originalMvpHandle,
+            1,
+            false,
+            scaledBlurAttachedViewVertexMatrix,
+            0
+        )
+        GLES20.glUniformMatrix4fv(originalTextureMvpHandle, 1, false, identityMatrixView, 0)
         GLES20.glUniformMatrix4fv(originalProjectionMatrixHandle, 1, false, projectionMatrix, 0)
 
         GLES20.glEnableVertexAttribArray(originalPositionHandle)
@@ -456,6 +430,123 @@ class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceVi
         )
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4)
+
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
+        GLES20.glDisableVertexAttribArray(originalPositionHandle)
+        GLES20.glDisableVertexAttribArray(originalTextureCoordsHandle)
+    }
+
+    // not matched [-1, 1] coords of the original in rect fbo
+    private fun renderCrop(
+        vertexBuffer: FloatBuffer,
+        textureBuffer: FloatBuffer,
+        textureId: Int
+    ) {
+        val projectionMatrix = FloatArray(16)
+        Matrix.setIdentityM(projectionMatrix, 0)
+        cropFrameBuffer?.let {
+            Matrix.orthoM(
+                projectionMatrix,
+                0,
+                it.width * -0.5f,
+                it.width * 0.5f,
+                it.height * -0.5f,
+                it.height * 0.5f,
+                -1f,
+                1f
+            )
+
+            // TODO no set View port
+            GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, it.frameBufferId)
+            GLES20.glViewport(0, 0, it.width, it.height)
+        }
+
+        GLES20.glUseProgram(originalRenderingProgram)
+
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
+
+        GLES20.glUniformMatrix4fv(originalMvpHandle, 1, false, scaledVertexMatrixForCrop, 0)
+        GLES20.glUniformMatrix4fv(originalTextureMvpHandle, 1, false, identityMatrixView, 0)
+        GLES20.glUniformMatrix4fv(originalProjectionMatrixHandle, 1, false, projectionMatrix, 0)
+
+        GLES20.glEnableVertexAttribArray(originalPositionHandle)
+        GLES20.glVertexAttribPointer(
+            originalPositionHandle,
+            X_Y_COORDS_NUMBER, GLES20.GL_FLOAT, false,
+            0,
+            vertexBuffer
+        )
+        GLES20.glEnableVertexAttribArray(originalTextureCoordsHandle)
+        GLES20.glVertexAttribPointer(
+            originalTextureCoordsHandle,
+            TEXTURE_COORDS_VERTEX_NUMBER,
+            GLES20.GL_FLOAT,
+            false,
+            0,
+            textureBuffer
+        )
+
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4)
+
+        saveToFile("_crop")
+        saveToFile("_crop2", scaledOriginalRectW, scaledOriginalRectH)
+
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
+        GLES20.glDisableVertexAttribArray(originalPositionHandle)
+        GLES20.glDisableVertexAttribArray(originalTextureCoordsHandle)
+    }
+
+    private fun renderCropWithRect(
+        vertexBuffer: FloatBuffer,
+        textureBuffer: FloatBuffer,
+        textureId: Int
+    ) {
+//        val projectionMatrix = FloatArray(16)
+        cropFrameBuffer?.let {
+//            Matrix.orthoM(
+//                projectionMatrix,
+//                0,
+//                it.width * -0.5f,
+//                it.width * 0.5f,
+//                it.height * -0.5f,
+//                it.height * 0.5f,
+//                -1f,
+//                1f
+//            )
+
+//            GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, it.frameBufferId)
+            it.bind()
+        }
+
+        GLES20.glUseProgram(originalRenderingProgram)
+
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
+
+        GLES20.glUniformMatrix4fv(originalMvpHandle, 1, false, scaledVertexMatrix, 0)
+        GLES20.glUniformMatrix4fv(originalTextureMvpHandle, 1, false, identityMatrixView, 0)
+        GLES20.glUniformMatrix4fv(originalProjectionMatrixHandle, 1, false, projectionMatrix, 0)
+
+        GLES20.glEnableVertexAttribArray(originalPositionHandle)
+        GLES20.glVertexAttribPointer(
+            originalPositionHandle,
+            X_Y_COORDS_NUMBER, GLES20.GL_FLOAT, false,
+            0,
+            vertexBuffer
+        )
+        GLES20.glEnableVertexAttribArray(originalTextureCoordsHandle)
+        GLES20.glVertexAttribPointer(
+            originalTextureCoordsHandle,
+            TEXTURE_COORDS_VERTEX_NUMBER,
+            GLES20.GL_FLOAT,
+            false,
+            0,
+            textureBuffer
+        )
+
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4)
+
+        saveToFile("_crop")
+        saveToFile("_crop2", scaledOriginalRectW, scaledOriginalRectH)
 
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
         GLES20.glDisableVertexAttribArray(originalPositionHandle)
@@ -475,7 +566,7 @@ class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceVi
 
         GLES20.glViewport(0, 0, width, height)
 
-        Matrix.setIdentityM(scaledBlurVertexMatrix, 0)
+        Matrix.setIdentityM(scaledBlurAttachedViewVertexMatrix, 0)
         Matrix.setIdentityM(identityMatrixView, 0)
         Matrix.setIdentityM(scaledVertexMatrix, 0)
         Matrix.setIdentityM(scaledTxtMatrixView, 0)
@@ -484,20 +575,20 @@ class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceVi
 //        val temp2 = FloatArray(16)
 //        Matrix.setIdentityM(temp2, 0)
 //        Matrix.scaleM(temp2, 0, width.toFloat(), height.toFloat(), 0f)
-//        val rotatedMatrixForOriginal = FloatArray(16)
-//        Matrix.setIdentityM(rotatedMatrixForOriginal, 0)
-//        Matrix.rotateM(rotatedMatrixForOriginal, 0, 30f, 0f, 0f, -1f)
+        val translationMatrix = FloatArray(16)
+        Matrix.setIdentityM(translationMatrix, 0)
+//        Matrix.translateM(translationMatrix, 0, 470f, 200f, 0f)
 
         val scaledMatrixForOriginal = FloatArray(16)
         Matrix.setIdentityM(scaledMatrixForOriginal, 0)
         Matrix.scaleM(
-            scaledVertexMatrix,
+            scaledMatrixForOriginal,
             0, /*width.toFloat()*/
-            SCALED_WIDTH, /*height.toFloat()*/
-            SCALED_HEIGHT,
+            BlurScaledActivity.SCALED_WIDTH, /*height.toFloat()*/
+            BlurScaledActivity.SCALED_HEIGHT,
             0f
         )
-//        Matrix.multiplyMM(scaledVertexMatrix, 0, rotatedMatrixForOriginal, 0, scaledMatrixForOriginal, 0)
+        Matrix.multiplyMM(scaledVertexMatrix, 0, translationMatrix, 0, scaledMatrixForOriginal, 0)
 
         Matrix.orthoM(
             projectionMatrix,
@@ -508,6 +599,15 @@ class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceVi
             height * 0.5f,
             -1f,
             1f
+        )
+
+        textureFrameBufferA = FrameBufferUtil.createFrameTextureBuffer(
+            width,
+            height
+        )
+        textureFrameBufferB = FrameBufferUtil.createFrameTextureBuffer(
+            width,
+            height
         )
     }
 
@@ -520,15 +620,6 @@ class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceVi
         )
 
         GLES20.glUseProgram(originalRenderingProgram)
-        // TODO EMPTY SIZE
-        textureFrameBufferA = FrameBufferUtil.createFrameTextureBuffer(
-            0,
-            0
-        )
-        textureFrameBufferB = FrameBufferUtil.createFrameTextureBuffer(
-            0,
-            0
-        )
 
         val originalBitmap = TxtLoaderUtil.getBitmap(context, R.drawable.keyboard_test_2)
         originalTextureId = TxtLoaderUtil.getTxt(originalBitmap)
@@ -609,216 +700,83 @@ class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceVi
             return false
         }
 
-        rectTxtCoordsList.add(
-            getTextureCoords(
-                textureRectStartPointX,
-                textureRectStartPointY,
-                textureRectEndPointX,
-                textureRectEndPointY
-            )
-        )
-
-        rectVertexCoordsList.add(
-            getVertexCoords(
-                vertexGlRectStartPointX,
-                vertexGlRectStartPointY,
-                vertexGlRectEndPointX,
-                vertexGlRectEndPointY
-            )
-        )
-
+        createCroppedTextureWithMatrix()
         postAction.invoke()
 
         return true
     }
 
-    private fun getTextureCoords(
-        rectStartPointX: Float,
-        rectStartPointY: Float,
-        endPointX: Float,
-        endPointY: Float
-    ): FloatArray {
+    private fun createCroppedTextureWithMatrix() {
+        cropFrameBuffer =
+            FrameBufferUtil.createFrameTextureBuffer(scaledOriginalRectW, scaledOriginalRectH)
 
-//        val rectLengthPixelX = (endPointX - rectStartPointX)
-//        val rectLengthPixelY = (endPointY - rectStartPointY)
-
-        Log.d(TAG, "onTouch rectStartPointX $rectStartPointX rectStartPointY $rectStartPointY")
-        Log.d(TAG, "onTouch rectLengthPixelX $endPointX rectLengthPixelY $endPointY")
-
-        val texturePointX = rectStartPointX / width
-        val texturePointY = rectStartPointY / height
-        var rectangleTextureX = endPointX / width //texturePointX + (rectLengthPixelX / width)
-        var rectangleTextureY = endPointY / height //texturePointY + (rectLengthPixelY / height)
-        val textureCoords = FloatArray(8)
-
-//        0f, 1f,
-//        1f, 1f,
-//        1f, 0f,
-//        0f, 0f
-
-        if (rectangleTextureX > 1) {
-            rectangleTextureX = 1f
-        }
-        if (rectangleTextureX < -1) {
-            rectangleTextureX = -1f
-        }
-
-        if (rectangleTextureY > 1) {
-            rectangleTextureY = 1f
-        }
-        if (rectangleTextureY < -1) {
-            rectangleTextureY = -1f
-        }
-
-        textureCoords[0] = texturePointX
-        textureCoords[1] = rectangleTextureY
-        textureCoords[2] = rectangleTextureX
-        textureCoords[3] = rectangleTextureY
-        textureCoords[4] = rectangleTextureX
-        textureCoords[5] = texturePointY
-        textureCoords[6] = texturePointX
-        textureCoords[7] = texturePointY
-
-//        textureCoords[0] = 0f
-//        textureCoords[1] = 1f
-//        textureCoords[2] = 1f
-//        textureCoords[3] = 1f
-//        textureCoords[4] = 1f
-//        textureCoords[5] = 0f
-//        textureCoords[6] = 0f
-//        textureCoords[7] = 0f
-
-        textureCoords.forEach {
-            Log.d(TAG, "onTouch foreach $it ")
-        }
-
-        return textureCoords
-    }
-
-    private fun getVertexCoords(
-        rectStartPointX: Float,
-        rectStartPointY: Float,
-        endPointX: Float,
-        endPointY: Float
-    ): FloatArray {
-        val startPointX = getNomalizedGlCoordsX(rectStartPointX, width)
-        val startPointY = getNomalizedGlCoordsY(rectStartPointY, height)
-        var rectX = getNomalizedGlCoordsX(endPointX, width)
-        var rectY = getNomalizedGlCoordsY(endPointY, height)
-
-        Log.d(TAG, "getVertexCoords size w= $lengthOfFboW")
-        Log.d(TAG, "getVertexCoords size y= $lengthOfFboH")
-
-        if (rectX > 1) {
-            rectX = 1f
-        }
-        if (rectX < -1) {
-            rectX = -1f
-        }
-
-        if (rectY > 1) {
-            rectY = 1f
-        }
-        if (rectY < -1) {
-            rectY = -1f
-        }
-
-//        Log.d(TAG, "onTouch rectX $rectX rectY $rectY")
-
-//        private val squareCoords: FloatArray = floatArrayOf(
-//            // X, Y
-//            -1f, -1f,
-//            1f, -1f,
-//            1f, 1f,
-//            -1f, 1f
-//        )
-
-
-        val vertextCoords = FloatArray(8)
-        vertextCoords[0] = startPointX
-        vertextCoords[1] = rectY
-        vertextCoords[2] = rectX
-        vertextCoords[3] = rectY
-        vertextCoords[4] = rectX
-        vertextCoords[5] = startPointY
-        vertextCoords[6] = startPointX
-        vertextCoords[7] = startPointY
-
-//        vertextCoords[0] = -1f
-//        vertextCoords[1] = -1f
-//        vertextCoords[2] = 1f
-//        vertextCoords[3] = -1f
-//        vertextCoords[4] = 1f
-//        vertextCoords[5] = 1f
-//        vertextCoords[6] = -1f
-//        vertextCoords[7] = 1f
-
-        for (i in vertextCoords.indices) {
-            vertextCoords[i] = vertextCoords[i] * 0.5f
-        }
-
-        // TODO FRAMEBUFFER SIZE
-        val frameBuffers = IntArray(2)
-        frameBuffers[0] = textureFrameBufferA?.frameBufferId ?: 0
-        frameBuffers[1] = textureFrameBufferB?.frameBufferId ?: 0
-
-//        lengthOfFboW -= 100
-//        lengthOfFboH -= 100
-
-        GLES20.glDeleteFramebuffers(2, frameBuffers, 0)
-        textureFrameBufferA = FrameBufferUtil.createFrameTextureBuffer(
-            lengthOfFboW,
-            lengthOfFboH
-        )
-        textureFrameBufferB = FrameBufferUtil.createFrameTextureBuffer(
-            lengthOfFboW,
-            lengthOfFboH
-        )
-
+        // transform for crop
         val scaledMatrix = FloatArray(16)
         Matrix.setIdentityM(scaledMatrix, 0)
-        Matrix.scaleM(scaledMatrix, 0, width.toFloat(), height.toFloat(), 0f)
+        Matrix.scaleM(
+            scaledMatrix,
+            0,
+            BlurScaledActivity.SCALED_WIDTH
+            /*scaledOriginalRectW.toFloat() * width / scaledOriginalRectW.toFloat()*/
+            /*width.toFloat()*/,
+            BlurScaledActivity.SCALED_HEIGHT
+            /*scaledOriginalRectH.toFloat() * height / scaledOriginalRectH.toFloat()*/
+            /*height.toFloat()*/,
+            0f
+        )
 
         val translateMatrix = FloatArray(16)
         Matrix.setIdentityM(translateMatrix, 0)
-        Matrix.translateM(translateMatrix, 0, translationXGl * -1, translationYGl * -1, 0f)
+        val centerX = (width.toFloat() * 0.5f - scaledOriginalRectW * 0.5f)
+        val centerY = (height.toFloat() * 0.5f - scaledOriginalRectH * 0.5f)
+        Matrix.translateM(
+            translateMatrix,
+            0, /*translationXGl * -1*/
+            centerX - translationXGl, /*translationYGl * -1*/
+            centerY - translationYGl /*translationYGl*/,
+            0f
+        )
 
         scaledVertexMatrixForCrop = FloatArray(16)
         Matrix.setIdentityM(scaledVertexMatrixForCrop, 0)
         Matrix.multiplyMM(scaledVertexMatrixForCrop, 0, translateMatrix, 0, scaledMatrix, 0)
 
+        // transform for rendering on a view
         val translateMatrixForView = FloatArray(16)
         Matrix.setIdentityM(translateMatrixForView, 0)
         Matrix.translateM(
             translateMatrixForView,
             0,
-            (-width * 0.5f) + (lengthOfOriginalW * 0.5f) + translationXOriginal,
-            (height * 0.5f) - (lengthOfOriginalH * 0.5f) - translationYOriginal,
+            /*(-width * 0.5f) + (sizeOfViewRectW * 0.5f) + translationXOriginal*/
+            (-width * 0.5f) + (sizeOfViewRectW * 0.5f) + translationXOriginal,
+            /*(height * 0.5f) - (sizeOfViewRectH * 0.5f) - translationYOriginal*/
+            (height * 0.5f) - (sizeOfViewRectH * 0.5f) - translationYOriginal,
             0f
         )
 
-//        val rotatedMatrix = FloatArray(16)
-//        Matrix.setIdentityM(rotatedMatrix, 0)
-//        Matrix.rotateM(rotatedMatrix, 0, 30f, 0f, 0f, -1f)
-//
-//        val tempM = FloatArray(16)
-//        Matrix.setIdentityM(tempM, 0)
-//        Matrix.multiplyMM(tempM, 0, translateMatrixForView, 0, rotatedMatrix, 0)
+        Log.d(TAG, "translationXGl $translationXGl $translationYGl")
+        Log.d(TAG, "lengthOfFboW $scaledOriginalRectW $scaledOriginalRectH")
+        Log.d(TAG, "lengthOfOriginalW $sizeOfViewRectW $sizeOfViewRectH")
 
         val scaledMatrixForView = FloatArray(16)
         Matrix.setIdentityM(scaledMatrixForView, 0)
-        Matrix.scaleM(scaledMatrixForView, 0, lengthOfOriginalW, lengthOfOriginalH, 0f)
+        Matrix.scaleM(
+            scaledMatrixForView,
+            0,
+            sizeOfViewRectW,
+            sizeOfViewRectH,
+            0f
+        )
 
-        Matrix.multiplyMM(scaledBlurVertexMatrix, 0, translateMatrixForView, 0, scaledMatrixForView, 0)
-
-        return vertextCoords
+        Matrix.multiplyMM(
+            scaledBlurAttachedViewVertexMatrix,
+            0,
+            translateMatrixForView,
+            0,
+            scaledMatrixForView,
+            0
+        )
     }
-
-    private fun getNomalizedGlCoordsX(x: Float, screenWidth: Int): Float =
-        x / screenWidth * 2.0f - 1.0f
-
-    private fun getNomalizedGlCoordsY(y: Float, screenHeight: Int): Float =
-        y / screenHeight * -2.0f + 1.0f
 
     private fun saveToFile(
         postFileName: String = "",
@@ -840,18 +798,11 @@ class BlurRendererCroppingWithMatrix(private val context: Context) : GLSurfaceVi
 
         private const val X_Y_COORDS_NUMBER = 2
         private const val FLOAT_BYTE_SIZE = 4
-        private const val SQUARE_X_Y_COUNT = 6
-        private const val SQUARE_LINE_COUNT = 6
         private const val TEXTURE_COORDS_VERTEX_NUMBER = 2
-        private const val VERTEX_RESOLUTION = 300f
-        private const val TEXTURE_RESOLUTION = 0.5f
 
         private const val BLUR_RATIO = 2
         private const val BLUR_OFFSET = 1.3846153846f//0.004f//0.003f//0.00001f
         private const val WIDTH_DIVIDER = 3f
         //0.003f//0.002f//1.3846153846f//1.3846153846f//0.003155048076953f'
-
-        const val SCALED_WIDTH = 1000f
-        const val SCALED_HEIGHT = 2000f
     }
 }
