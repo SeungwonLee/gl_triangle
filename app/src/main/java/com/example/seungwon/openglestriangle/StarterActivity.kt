@@ -9,6 +9,7 @@ import com.example.seungwon.openglestriangle.blur.framebuffer.Blur2Activity
 import com.example.seungwon.openglestriangle.blur.rect.BlurMappingActivity
 import com.example.seungwon.openglestriangle.blur.rect.BlurRectActivity
 import com.example.seungwon.openglestriangle.blur.rect.BlurScaledActivity
+import com.example.seungwon.openglestriangle.blur.rect.glsl.GlslRectBlurActivity
 import com.example.seungwon.openglestriangle.blur.stackblur.StackBlurActivity
 import com.example.seungwon.openglestriangle.filter.FilterActivity
 import com.example.seungwon.openglestriangle.filter.emboss.EmbossActivity
@@ -69,6 +70,9 @@ class StarterActivity : AppCompatActivity() {
         }
         findViewById<Button>(R.id.blur_rect_txt_mapping_transform_opengl_btn).setOnClickListener {
             startActivity(Intent(this, BlurScaledActivity::class.java))
+        }
+        findViewById<Button>(R.id.blur_function_blur_opengl_btn).setOnClickListener {
+            startActivity(Intent(this, GlslRectBlurActivity::class.java))
         }
         findViewById<Button>(R.id.mosaic_txt_opengl_btn).setOnClickListener {
             startActivity(Intent(this, MosaicActivity::class.java))

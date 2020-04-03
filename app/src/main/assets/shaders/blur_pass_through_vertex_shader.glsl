@@ -12,4 +12,3 @@ void main() {
     gl_Position = uProjectionMatrix * temp_v;
     vTextureCoord = (uTexMatrix * aTextureCoord).xy;
 }
-

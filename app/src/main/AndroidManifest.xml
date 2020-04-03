@@ -16,8 +16,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
+        android:resizeableActivity="true"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".blur.rect.BlurScaledActivity"></activity>
+        <activity
+            android:name=".blur.rect.glsl.GlslRectBlurActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize" />
+        <activity android:name=".blur.rect.BlurScaledActivity" />
         <activity android:name=".blur.stackblur.StackBlurActivity" />
         <activity android:name=".blur.rect.BlurMappingActivity" />
         <activity android:name=".mosaic.rect.MosaicRectActivity" />

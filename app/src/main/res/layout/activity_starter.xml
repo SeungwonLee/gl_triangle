@@ -108,11 +108,18 @@
             app:layout_constraintTop_toBottomOf="@+id/blur_rect_txt_mapping_opengl_btn" />
 
         <Button
+            android:id="@+id/blur_function_blur_opengl_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Blur(GLSL) Texture"
+            app:layout_constraintTop_toBottomOf="@+id/blur_rect_txt_mapping_transform_opengl_btn" />
+
+        <Button
             android:id="@+id/blur_stack_blur_opengl_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Blur(Stack blur) Texture"
-            app:layout_constraintTop_toBottomOf="@+id/blur_rect_txt_mapping_transform_opengl_btn" />
+            app:layout_constraintTop_toBottomOf="@+id/blur_function_blur_opengl_btn" />
 
         <Button
             android:id="@+id/mosaic_txt_opengl_btn"
