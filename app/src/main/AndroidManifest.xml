@@ -13,30 +13,13 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:resizeableActivity="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:resizeableActivity="true"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity
-            android:name=".blur.rect.glsl.GlslRectBlurActivity"
-            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize" />
-        <activity android:name=".blur.rect.BlurScaledActivity" />
-        <activity android:name=".blur.stackblur.StackBlurActivity" />
-        <activity android:name=".blur.rect.BlurMappingActivity" />
-        <activity android:name=".mosaic.rect.MosaicRectActivity" />
-        <activity android:name=".BaseActivity" />
-        <activity android:name=".mosaic.MosaicActivity" />
-        <activity android:name=".blur.rect.BlurRectActivity" />
-        <activity android:name=".blur.framebuffer.Blur2Activity" />
-        <activity android:name=".blur.BlurActivity" />
-        <activity android:name=".framebuffer.FrameBufferRendererActivity" />
-        <activity android:name=".multiTxt.MultiTxtActivity" />
-        <activity android:name=".filter.emboss.EmbossActivity" />
-        <activity android:name=".filter.FilterActivity" />
-        <activity android:name=".projection.ProjectionActivity" />
-        <activity android:name=".projection.translation.StripActivity" />
-        <activity android:name=".triangle.MainActivity" />
+        <activity android:name=".gles30.triangle.TriangleActivity"></activity>
+        <activity android:name=".gles30.Gles30StarterActivity" />
         <activity android:name=".StarterActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -45,10 +28,30 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".translation.SquareActivity"
+            android:name=".gles20.blur.rect.glsl.GlslRectBlurActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize" />
+        <activity android:name=".gles20.blur.rect.BlurScaledActivity" />
+        <activity android:name=".gles20.blur.stackblur.StackBlurActivity" />
+        <activity android:name=".gles20.blur.rect.BlurMappingActivity" />
+        <activity android:name=".gles20.mosaic.rect.MosaicRectActivity" />
+        <activity android:name=".BaseActivity" />
+        <activity android:name=".gles20.mosaic.MosaicActivity" />
+        <activity android:name=".gles20.blur.rect.BlurRectActivity" />
+        <activity android:name=".gles20.blur.framebuffer.Blur2Activity" />
+        <activity android:name=".gles20.blur.BlurActivity" />
+        <activity android:name=".gles20.framebuffer.FrameBufferRendererActivity" />
+        <activity android:name=".gles20.multiTxt.MultiTxtActivity" />
+        <activity android:name=".gles20.filter.emboss.EmbossActivity" />
+        <activity android:name=".gles20.filter.FilterActivity" />
+        <activity android:name=".gles20.projection.ProjectionActivity" />
+        <activity android:name=".gles20.projection.translation.StripActivity" />
+        <activity android:name=".gles20.triangle.MainActivity" />
+        <activity android:name=".gles20.Gles20StarterActivity" />
+        <activity
+            android:name=".gles20.translation.SquareActivity"
             android:label="@string/title_activity_square"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".text.TextureActivity" />
+        <activity android:name=".gles20.text.TextureActivity" />
     </application>
 
 </manifest>

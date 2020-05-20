@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".blur.rect.BlurRectActivity">
+    tools:context=".gles20.blur.rect.BlurRectActivity">
 
     <android.opengl.GLSurfaceView
         android:id="@+id/gl_surface"

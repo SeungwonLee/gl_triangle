@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".blur.framebuffer.Blur2Activity">
+    tools:context=".gles20.blur.framebuffer.Blur2Activity">
 
     <android.opengl.GLSurfaceView
         android:id="@+id/blur_framebuffer_gl_surface"

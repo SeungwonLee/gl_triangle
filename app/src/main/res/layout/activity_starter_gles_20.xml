@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".gles20.Gles20StarterActivity">
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <Button
+            android:id="@+id/triangle_opengl_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Triangle" />
+
+        <Button
+            android:id="@+id/square_opengl_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Square"
+            app:layout_constraintTop_toBottomOf="@+id/triangle_opengl_btn" />
+
+        <Button
+            android:id="@+id/txt_opengl_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Texture(with Triangle)"
+            app:layout_constraintTop_toBottomOf="@+id/square_opengl_btn" />
+
+        <Button
+            android:id="@+id/strip_projection_txt_opengl_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Texture(with Projection)"
+            app:layout_constraintTop_toBottomOf="@+id/txt_opengl_btn" />
+
+        <Button
+            android:id="@+id/strip_txt_opengl_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Texture(with Translation)"
+            app:layout_constraintTop_toBottomOf="@+id/strip_projection_txt_opengl_btn" />
+
+        <Button
+            android:id="@+id/filter_txt_opengl_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Texture(with Filter)"
+            app:layout_constraintTop_toBottomOf="@+id/strip_txt_opengl_btn" />
+
+        <Button
+            android:id="@+id/filter_emboss_txt_opengl_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Texture(with Emboss Filter)"
+            app:layout_constraintTop_toBottomOf="@+id/filter_txt_opengl_btn" />
+
+        <Button
+            android:id="@+id/multi_txt_opengl_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Multi-Texture"
+            app:layout_constraintTop_toBottomOf="@+id/filter_emboss_txt_opengl_btn" />
+
+        <Button
+            android:id="@+id/framebuffer_txt_opengl_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="FBO-Texture"
+            app:layout_constraintTop_toBottomOf="@+id/multi_txt_opengl_btn" />
+
+        <Button
+            android:id="@+id/blur_txt_opengl_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Blur Texture"
+            app:layout_constraintTop_toBottomOf="@+id/framebuffer_txt_opengl_btn" />
+
+        <Button
+            android:id="@+id/blur_framebuffer_txt_opengl_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Blur(framebuffer) Texture"
+            app:layout_constraintTop_toBottomOf="@+id/blur_txt_opengl_btn" />
+
+        <Button
+            android:id="@+id/blur_rect_txt_opengl_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Blur(Rect) Texture"
+            app:layout_constraintTop_toBottomOf="@+id/blur_framebuffer_txt_opengl_btn" />
+
+        <Button
+            android:id="@+id/blur_rect_txt_mapping_opengl_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Blur(Rect Mapping with coords) Texture"
+            app:layout_constraintTop_toBottomOf="@+id/blur_rect_txt_opengl_btn" />
+
+        <Button
+            android:id="@+id/blur_rect_txt_mapping_transform_opengl_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Blur(Rect Mapping with transform) Texture"
+            app:layout_constraintTop_toBottomOf="@+id/blur_rect_txt_mapping_opengl_btn" />
+
+        <Button
+            android:id="@+id/blur_function_blur_opengl_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Blur(GLSL) Texture"
+            app:layout_constraintTop_toBottomOf="@+id/blur_rect_txt_mapping_transform_opengl_btn" />
+
+        <Button
+            android:id="@+id/blur_stack_blur_opengl_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Blur(Stack blur) Texture"
+            app:layout_constraintTop_toBottomOf="@+id/blur_function_blur_opengl_btn" />
+
+        <Button
+            android:id="@+id/mosaic_txt_opengl_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Mosaic Texture"
+            app:layout_constraintTop_toBottomOf="@+id/blur_stack_blur_opengl_btn" />
+
+        <Button
+            android:id="@+id/mosaic_rect_txt_opengl_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Mosaic(Rect) Texture"
+            app:layout_constraintTop_toBottomOf="@+id/mosaic_txt_opengl_btn" />
+    </android.support.constraint.ConstraintLayout>
+
+</ScrollView>

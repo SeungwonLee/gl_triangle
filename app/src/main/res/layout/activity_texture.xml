@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".text.TextureActivity">
+    tools:context=".gles20.text.TextureActivity">
 
     <android.opengl.GLSurfaceView
         android:id="@+id/texture_surface_view"
