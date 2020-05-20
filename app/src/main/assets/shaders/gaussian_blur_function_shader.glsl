@@ -51,29 +51,3 @@ void main()
         gl_FragColor = texture2D(uTexture, vTextureCoord);
     }
 }
-
-//#define ARRAY_CNT 5
-//precision mediump float;
-//uniform sampler2D tex_sampler;
-//varying vec2 v_texcoord;
-//uniform float u_texelWidthOffset;
-//uniform float u_texelHeightOffset;
-//void main()
-//{
-//    vec2 offset = vec2(u_texelHeightOffset, u_texelWidthOffset);// horizontal, vertical
-//    // weight kernal size=3x3, sigma=1
-//    // sample count = 9
-//    // [http://dev.theomader.com/gaussian-kernel-calculator/]
-//    float weight[ARRAY_CNT];
-//    weight[0] = 0.195346;
-//    weight[1] = 0.123317;
-//    weight[2] = 0.077847;
-//    weight[3] = 0.123317;
-//    weight[4] = 0.077847;
-//    vec3 sum = texture2D(tex_sampler, v_texcoord).rgb * weight[0];
-//    for (int i = 1; i < ARRAY_CNT; i++) {
-//        sum += texture2D(tex_sampler, v_texcoord + vec2(float(i) * offset)).rgb * weight[i];
-//        sum += texture2D(tex_sampler, v_texcoord - vec2(float(i) * offset)).rgb * weight[i];
-//    }
-//    gl_FragColor = vec4(sum, 1.0);
-//}
