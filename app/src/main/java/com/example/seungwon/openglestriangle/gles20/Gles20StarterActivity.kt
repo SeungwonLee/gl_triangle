@@ -1,33 +1,34 @@
-package com.example.seungwon.openglestriangle
+package com.example.seungwon.openglestriangle.gles20
 
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.widget.Button
-import com.example.seungwon.openglestriangle.`gles20\`.blur.BlurActivity
-import com.example.seungwon.openglestriangle.`gles20\`.blur.framebuffer.Blur2Activity
-import com.example.seungwon.openglestriangle.`gles20\`.blur.rect.BlurMappingActivity
-import com.example.seungwon.openglestriangle.`gles20\`.blur.rect.BlurRectActivity
-import com.example.seungwon.openglestriangle.`gles20\`.blur.rect.BlurScaledActivity
-import com.example.seungwon.openglestriangle.`gles20\`.blur.rect.glsl.GlslRectBlurActivity
-import com.example.seungwon.openglestriangle.`gles20\`.blur.stackblur.StackBlurActivity
-import com.example.seungwon.openglestriangle.`gles20\`.filter.FilterActivity
-import com.example.seungwon.openglestriangle.`gles20\`.filter.emboss.EmbossActivity
-import com.example.seungwon.openglestriangle.`gles20\`.framebuffer.FrameBufferRendererActivity
-import com.example.seungwon.openglestriangle.`gles20\`.mosaic.MosaicActivity
-import com.example.seungwon.openglestriangle.`gles20\`.mosaic.rect.MosaicRectActivity
-import com.example.seungwon.openglestriangle.`gles20\`.multiTxt.MultiTxtActivity
-import com.example.seungwon.openglestriangle.`gles20\`.projection.ProjectionActivity
-import com.example.seungwon.openglestriangle.`gles20\`.projection.translation.StripActivity
-import com.example.seungwon.openglestriangle.`gles20\`.text.TextureActivity
-import com.example.seungwon.openglestriangle.`gles20\`.translation.SquareActivity
-import com.example.seungwon.openglestriangle.`gles20\`.triangle.MainActivity
+import com.example.seungwon.openglestriangle.R
+import com.example.seungwon.openglestriangle.gles20.blur.BlurActivity
+import com.example.seungwon.openglestriangle.gles20.blur.framebuffer.Blur2Activity
+import com.example.seungwon.openglestriangle.gles20.blur.rect.BlurMappingActivity
+import com.example.seungwon.openglestriangle.gles20.blur.rect.BlurRectActivity
+import com.example.seungwon.openglestriangle.gles20.blur.rect.BlurScaledActivity
+import com.example.seungwon.openglestriangle.gles20.blur.rect.glsl.GlslRectBlurActivity
+import com.example.seungwon.openglestriangle.gles20.blur.stackblur.StackBlurActivity
+import com.example.seungwon.openglestriangle.gles20.filter.FilterActivity
+import com.example.seungwon.openglestriangle.gles20.filter.emboss.EmbossActivity
+import com.example.seungwon.openglestriangle.gles20.framebuffer.FrameBufferRendererActivity
+import com.example.seungwon.openglestriangle.gles20.mosaic.MosaicActivity
+import com.example.seungwon.openglestriangle.gles20.mosaic.rect.MosaicRectActivity
+import com.example.seungwon.openglestriangle.gles20.multiTxt.MultiTxtActivity
+import com.example.seungwon.openglestriangle.gles20.projection.ProjectionActivity
+import com.example.seungwon.openglestriangle.gles20.projection.translation.StripActivity
+import com.example.seungwon.openglestriangle.gles20.text.TextureActivity
+import com.example.seungwon.openglestriangle.gles20.translation.SquareActivity
+import com.example.seungwon.openglestriangle.gles20.triangle.MainActivity
 
-class Gles2StarterActivity : AppCompatActivity() {
+class Gles20StarterActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_starter)
+        setContentView(R.layout.activity_starter_gles_20)
 
         findViewById<Button>(R.id.triangle_opengl_btn).setOnClickListener {
             startActivity(Intent(this, MainActivity::class.java))
