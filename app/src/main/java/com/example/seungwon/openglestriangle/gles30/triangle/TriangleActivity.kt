@@ -8,7 +8,7 @@ import android.util.Log
 import com.example.seungwon.openglestriangle.BaseActivity30
 
 class TriangleActivity : BaseActivity30() {
-    override fun getRenderer(): GLSurfaceView.Renderer = TriangleRenderer(this)
+    override fun getRenderer(): GLSurfaceView.Renderer = TriangleRendererWithVBO(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

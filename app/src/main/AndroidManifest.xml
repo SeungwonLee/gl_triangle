@@ -18,7 +18,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".gles30.triangle.TriangleActivity"></activity>
+        <activity android:name=".gles30.triangle.TriangleVaoVboActivity"></activity>
+        <activity android:name=".gles30.texture.TextureActivity" />
+        <activity android:name=".gles30.triangle.TriangleActivity" />
         <activity android:name=".gles30.Gles30StarterActivity" />
         <activity android:name=".StarterActivity">
             <intent-filter>

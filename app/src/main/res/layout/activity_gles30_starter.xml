@@ -7,12 +7,30 @@
     tools:context=".gles30.Gles30StarterActivity">
 
     <Button
-        android:id="@+id/gles_30_triangle_btn"
+        android:id="@+id/gles_30_texture_btn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Triangle"
+        android:text="Texture"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <Button
+        android:id="@+id/gles_30_triangle_vbo_vao_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Triangle(VBO, VAO)"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/gles_30_texture_btn" />
+
+    <Button
+        android:id="@+id/gles_30_triangle_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Triangle with GLES20"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/gles_30_triangle_vbo_vao_btn" />
 
 </android.support.constraint.ConstraintLayout>

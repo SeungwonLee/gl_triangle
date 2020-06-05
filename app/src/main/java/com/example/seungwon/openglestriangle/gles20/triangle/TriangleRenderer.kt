@@ -68,7 +68,15 @@ class TriangleRenderer(private val context: Context) : GLSurfaceView.Renderer {
     }
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
+
+        val inputArray = intArrayOf(1)
+        gl?.glGetIntegerv(GLES20.GL_MAX_VERTEX_ATTRIBS, inputArray, 0)
+        Log.i("GL", "GL_MAX_VERTEX_ATTRIBS = " + inputArray[0])
+
+        gl?.glGetIntegerv(GLES20.GL_MAX_VERTEX_UNIFORM_VECTORS, inputArray, 0)
+        Log.i("GL", "GL_MAX_VERTEX_UNIFORM_VECTORS = " + inputArray[0])
+
 
         val vertexCodeString = TextResourceReader.readTextFileFromResource(context, R.raw.simple_vertex_shader)
         val vertexShader = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER)
